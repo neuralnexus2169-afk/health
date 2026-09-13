@@ -1,0 +1,6 @@
+{
+  "name": "HealthTimeline",
+  "description": "A modern longitudinal health-record application shell for unifying and exploring patient medical history.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

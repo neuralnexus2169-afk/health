@@ -1,0 +1,261 @@
+// Prisma schema for HealthTimeline
+// Supports PostgreSQL in production / Cloud SQL, and clean repository abstraction
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum DocumentType {
+  PRESCRIPTION
+  LAB_REPORT
+  DISCHARGE_SUMMARY
+  CONSULTATION_NOTE
+  IMAGING_REPORT
+  MEDICAL_BILL
+  VACCINATION_RECORD
+  OTHER
+}
+
+enum DocumentStatus {
+  UPLOADED
+  PROCESSING
+  PROCESSED
+  NEEDS_REVIEW
+  FAILED
+}
+
+enum MedicalEventType {
+  CONSULTATION
+  DIAGNOSIS
+  MEDICATION
+  LABORATORY
+  IMAGING
+  PROCEDURE
+  HOSPITALIZATION
+  VACCINATION
+  OTHER
+}
+
+enum DiagnosisStatus {
+  ACTIVE
+  RESOLVED
+  HISTORICAL
+  UNKNOWN
+}
+
+enum MedicationStatus {
+  ACTIVE
+  DISCONTINUED
+  HISTORICAL
+  UNKNOWN
+}
+
+enum InsightType {
+  TREND
+  POTENTIAL_INCONSISTENCY
+  MISSING_INFORMATION
+  SUMMARY
+  OTHER
+}
+
+model Patient {
+  id          String   @id @default(uuid())
+  name        String
+  dateOfBirth DateTime
+  gender      Gender
+  bloodGroup  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  documents     Document[]
+  medicalEvents MedicalEvent[]
+  diagnoses     Diagnosis[]
+  medications   Medication[]
+  labResults    LabResult[]
+  aiInsights    AIInsight[]
+
+  @@map("patients")
+}
+
+model HealthcareFacility {
+  id        String   @id @default(uuid())
+  name      String
+  type      String
+  address   String?
+  createdAt DateTime @default(now())
+
+  providers     HealthcareProvider[]
+  documents     Document[]
+  medicalEvents MedicalEvent[]
+  labResults    LabResult[]
+
+  @@map("healthcare_facilities")
+}
+
+model HealthcareProvider {
+  id             String             @id @default(uuid())
+  name           String
+  specialization String
+  facilityId     String
+  facility       HealthcareFacility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  createdAt      DateTime           @default(now())
+
+  documents     Document[]
+  medicalEvents MedicalEvent[]
+
+  @@map("healthcare_providers")
+}
+
+model Document {
+  id           String         @id @default(uuid())
+  patientId    String
+  patient      Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  fileName     String
+  documentType DocumentType
+  documentDate DateTime
+  facilityId   String?
+  facility     HealthcareFacility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  providerId   String?
+  provider     HealthcareProvider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  status       DocumentStatus @default(PROCESSED)
+  createdAt    DateTime       @default(now())
+
+  medicalEvents    MedicalEvent[]
+  diagnoses        Diagnosis[]
+  medications      Medication[]
+  labResults       LabResult[]
+  sourceReferences SourceReference[]
+  extractions      DocumentExtraction[]
+
+  @@map("documents")
+}
+
+model MedicalEvent {
+  id          String           @id @default(uuid())
+  patientId   String
+  patient     Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  eventType   MedicalEventType
+  eventDate   DateTime
+  title       String
+  description String
+  facilityId  String?
+  facility    HealthcareFacility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  providerId  String?
+  provider    HealthcareProvider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  documentId  String?
+  document    Document?        @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  createdAt   DateTime         @default(now())
+
+  diagnoses   Diagnosis[]
+  medications Medication[]
+  labResults  LabResult[]
+
+  @@map("medical_events")
+}
+
+model Diagnosis {
+  id                  String          @id @default(uuid())
+  patientId           String
+  patient             Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  name                String
+  status              DiagnosisStatus @default(ACTIVE)
+  firstDocumentedDate DateTime
+  lastDocumentedDate  DateTime
+  eventId             String?
+  event               MedicalEvent?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  documentId          String?
+  document            Document?       @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@map("diagnoses")
+}
+
+model Medication {
+  id          String           @id @default(uuid())
+  patientId   String
+  patient     Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  name        String
+  genericName String?
+  dosage      String
+  frequency   String
+  route       String?
+  startDate   DateTime
+  endDate     DateTime?
+  status      MedicationStatus @default(ACTIVE)
+  eventId     String?
+  event       MedicalEvent?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  documentId  String?
+  document    Document?        @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@map("medications")
+}
+
+model LabResult {
+  id             String        @id @default(uuid())
+  patientId      String
+  patient        Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  testName       String
+  parameterName  String
+  value          Float
+  unit           String
+  referenceRange String?
+  testDate       DateTime
+  facilityId     String?
+  facility       HealthcareFacility? @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  documentId     String?
+  document       Document?     @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  eventId        String?
+  event          MedicalEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  @@map("lab_results")
+}
+
+model SourceReference {
+  id         String   @id @default(uuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  pageNumber Int?
+  sourceText String?
+  createdAt  DateTime @default(now())
+
+  @@map("source_references")
+}
+
+model AIInsight {
+  id         String      @id @default(uuid())
+  patientId  String
+  patient    Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  type       InsightType
+  title      String
+  content    String
+  confidence Float?
+  createdAt  DateTime    @default(now())
+
+  @@map("ai_insights")
+}
+
+model DocumentExtraction {
+  id            String   @id @default(uuid())
+  documentId    String
+  document      Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  model         String   // e.g., 'gemini-2.5-flash' or 'mock-clinical-engine'
+  status        String   @default("Needs Review") // Pending, Completed, Needs Review, Confirmed, Rejected
+  rawExtraction String?
+  dataJson      String   // Serialized StructuredExtractionData
+  extractedAt   DateTime @default(now())
+  confirmedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("document_extractions")
+}
