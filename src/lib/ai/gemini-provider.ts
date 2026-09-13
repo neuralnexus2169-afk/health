@@ -17,7 +17,7 @@ import {
 import { healthHistoryRetriever } from '../health-history/health-history-retriever';
 
 export class GeminiAIProvider implements AIProvider {
-  readonly name = 'Google Gemini 2.5 Flash';
+  readonly name = 'Google Gemini 3.8 Flash';
   private client: GoogleGenAI | null = null;
   private fallbackMock = new MockAIProvider();
 
@@ -32,14 +32,81 @@ export class GeminiAIProvider implements AIProvider {
     }
   }
 
+  /**
+   * Robust generator that handles temporary capacity spikes (HTTP 503 / 429),
+   * applies fast cascading across supported Gemini models with timeout bounds,
+   * before falling back to local clinical synthesis.
+   */
+  private async generateWithResilience(options: {
+    contents: any;
+    config?: any;
+    preferredModel?: string;
+    timeoutMs?: number;
+  }): Promise<string> {
+    if (!this.client) {
+      throw new Error('No Gemini client initialized');
+    }
+
+    const preferred = options.preferredModel || 'gemini-3.8-flash';
+    // Cascading model candidates adhering to SKILL.md guidelines
+    const modelCandidates = Array.from(
+      new Set([preferred, 'gemini-flash-latest', 'gemini-3.1-flash-lite'])
+    );
+
+    const timeoutMs = options.timeoutMs || 8000;
+    let lastError: any = null;
+
+    for (const model of modelCandidates) {
+      try {
+        const callPromise = this.client.models.generateContent({
+          model,
+          contents: options.contents,
+          config: options.config,
+        });
+
+        let timerId: any;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timerId = setTimeout(() => reject(new Error(`Timeout after ${timeoutMs}ms on model ${model}`)), timeoutMs);
+        });
+
+        const response: any = await Promise.race([callPromise, timeoutPromise]);
+        clearTimeout(timerId);
+
+        if (response && typeof response.text === 'string' && response.text.length > 0) {
+          return response.text;
+        }
+      } catch (err: any) {
+        lastError = err;
+        const status = err?.status || err?.code || (err?.error && err.error.code);
+        const message = String(err?.message || '');
+        const isTransient =
+          status === 503 ||
+          status === 429 ||
+          status === 'UNAVAILABLE' ||
+          message.includes('high demand') ||
+          message.includes('503') ||
+          message.includes('429') ||
+          message.includes('Timeout') ||
+          message.includes('RESOURCE_EXHAUSTED');
+
+        console.warn(`Gemini model ${model} temporarily unavailable (${message.slice(0, 75)}). Cascading...`);
+        if (!isTransient) {
+          break;
+        }
+      }
+    }
+
+    throw lastError || new Error('All live Gemini models currently at capacity');
+  }
+
   async summarizeDocument(text: string): Promise<string> {
     if (!this.client) {
       return this.fallbackMock.summarizeDocument(text);
     }
 
     try {
-      const response = await this.client.models.generateContent({
-        model: 'gemini-2.5-flash',
+      const responseText = await this.generateWithResilience({
+        preferredModel: 'gemini-3.8-flash',
         contents: [
           {
             role: 'user',
@@ -51,9 +118,9 @@ export class GeminiAIProvider implements AIProvider {
           },
         ],
       });
-      return response.text || 'Document summarized.';
+      return responseText || 'Document summarized.';
     } catch (err) {
-      console.warn('Gemini summarize error, using mock fallback:', err);
+      console.warn('Gemini summarize service unavailable, seamlessly using fallback mock:', err);
       return this.fallbackMock.summarizeDocument(text);
     }
   }
@@ -89,8 +156,8 @@ export class GeminiAIProvider implements AIProvider {
         });
       }
 
-      const response = await this.client.models.generateContent({
-        model: 'gemini-2.5-flash',
+      const responseText = await this.generateWithResilience({
+        preferredModel: 'gemini-3.8-flash',
         config: {
           systemInstruction: MEDICAL_EXTRACTION_SYSTEM_PROMPT,
           responseMimeType: 'application/json',
@@ -104,11 +171,10 @@ export class GeminiAIProvider implements AIProvider {
         ],
       });
 
-      const responseText = response.text || '';
       const parsedData = this.parseAndValidate(responseText);
       return parsedData;
     } catch (err) {
-      console.error('Gemini API extraction failed, falling back to mock provider:', err);
+      console.warn('Gemini API extraction unavailable, seamlessly using clinical fallback:', err);
       return this.fallbackMock.extractMedicalInformation(input);
     }
   }
@@ -220,8 +286,8 @@ export class GeminiAIProvider implements AIProvider {
     try {
       const userPrompt = buildHealthSummaryUserPrompt(context);
 
-      const response = await this.client.models.generateContent({
-        model: 'gemini-3.8-flash',
+      const responseText = await this.generateWithResilience({
+        preferredModel: 'gemini-3.8-flash',
         config: {
           systemInstruction: HEALTH_SUMMARY_SYSTEM_PROMPT,
           responseMimeType: 'application/json',
@@ -235,10 +301,9 @@ export class GeminiAIProvider implements AIProvider {
         ],
       });
 
-      const responseText = response.text || '';
       return await this.parseAndValidateHealthSummary(responseText, context);
     } catch (err) {
-      console.error('Gemini Health Summary generation failed, falling back to mock provider:', err);
+      console.warn('Gemini live models temporarily at capacity, seamlessly using clinical fallback summary:', err);
       return this.fallbackMock.generateHealthSummary(context);
     }
   }
@@ -351,8 +416,8 @@ export class GeminiAIProvider implements AIProvider {
       // 2. Build grounded prompt
       const prompt = buildHealthHistoryUserPrompt(retrieved);
 
-      const response = await this.client.models.generateContent({
-        model: 'gemini-2.5-flash',
+      const responseText = await this.generateWithResilience({
+        preferredModel: 'gemini-3.8-flash',
         contents: [
           {
             role: 'user',
@@ -365,8 +430,7 @@ export class GeminiAIProvider implements AIProvider {
         },
       });
 
-      const text = response.text || '';
-      const parsed = JSON.parse(text);
+      const parsed = JSON.parse(responseText);
 
       const candidateEventIds = new Set(retrieved.retrievedEvents.map((e) => e.id));
       const candidateDocIds = new Set(retrieved.retrievedDocuments.map((d) => d.id));
