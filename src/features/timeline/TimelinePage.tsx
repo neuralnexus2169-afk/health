@@ -5,6 +5,7 @@ import {
   FileText,
   User,
   GitCommitHorizontal,
+  FileDown,
 } from 'lucide-react';
 import { PageHeader } from '../../components/dashboard/PageHeader';
 import { Button } from '../../components/ui/Button';
@@ -29,6 +30,7 @@ interface TimelinePageProps {
   patient?: PatientProfile;
   onNavigate: (route: NavigationRoute) => void;
   onOpenUpload: () => void;
+  onOpenExportReport?: () => void;
 }
 
 const INITIAL_FILTERS: TimelineFilterState = {
@@ -43,9 +45,10 @@ export function TimelinePage({
   patient,
   onNavigate,
   onOpenUpload,
+  onOpenExportReport,
 }: TimelinePageProps) {
   const patientId = patient?.id || DEFAULT_PATIENT_ID;
-  const patientName = patient?.name || 'Arun Mathew';
+  const patientName = patient?.name || '';
 
   const [isLoading, setIsLoading] = useState(true);
   const [events, setEvents] = useState<EnrichedMedicalEvent[]>([]);
@@ -198,6 +201,33 @@ export function TimelinePage({
     setFilters(INITIAL_FILTERS);
   };
 
+  
+  const handleDeleteEvent = async (id: string, type: 'event' | 'diagnosis' | 'medication' | 'lab') => {
+    if (!window.confirm("Delete this manually entered record?\nThis will remove the record from your health history. This action cannot be undone.")) return;
+    try {
+      const { deleteRecord } = await import('../../services/patientService');
+      let targetModel = 'MedicalEvent';
+      if (type === 'diagnosis') targetModel = 'Diagnosis';
+      else if (type === 'medication') targetModel = 'Medication';
+      else if (type === 'lab') targetModel = 'LabResult';
+
+      await deleteRecord(targetModel, id);
+      
+      // refresh events
+      setEvents(events.filter(e => {
+        if (type === 'event' && e.id === id) return false;
+        if (type === 'diagnosis' && e.diagnoses && e.diagnoses.some(d => d.id === id)) return false;
+        if (type === 'medication' && e.medications && e.medications.some(m => m.id === id)) return false;
+        if (type === 'lab' && e.labResults && e.labResults.some(l => l.id === id)) return false;
+        return true; // Simplified optimisitic update, full refresh would be better
+      }));
+      // Just doing a window.location.reload() or calling the fetch function would be cleaner
+      window.location.reload();
+    } catch (err) {
+      alert("Failed to delete record.");
+    }
+  };
+
   const handleSelectEvent = (event: EnrichedMedicalEvent) => {
     setSelectedEvent(event);
     setIsDetailsOpen(true);
@@ -222,6 +252,16 @@ export function TimelinePage({
         }
         actions={
           <div className="flex items-center gap-2.5">
+            <Button
+              id="timeline-export-report-btn"
+              variant="outline"
+              size="sm"
+              icon={<FileDown className="w-3.5 h-3.5 text-teal-700" />}
+              onClick={onOpenExportReport}
+              className="bg-white hover:bg-teal-50/60 border-teal-200 text-teal-950 font-semibold"
+            >
+              Export Report
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -275,6 +315,7 @@ export function TimelinePage({
           events={filteredEvents}
           onSelectEvent={handleSelectEvent}
           onViewSource={handleViewSource}
+          onDeleteEvent={handleDeleteEvent}
           onResetFilters={handleResetFilters}
           isFiltered={
             filters.searchQuery.trim() !== '' ||
@@ -283,6 +324,7 @@ export function TimelinePage({
             Boolean(filters.customStartDate) ||
             Boolean(filters.customEndDate)
           }
+          onOpenUpload={onOpenUpload}
         />
       )}
 

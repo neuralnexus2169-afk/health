@@ -32,18 +32,14 @@ import {
   RecentEvent,
 } from '../types';
 
-export const DEFAULT_PATIENT_ID = 'pat-arun-mathew-01';
+export const DEFAULT_PATIENT_ID = '';
 
 /**
- * Normalize patient IDs so legacy UI references like 'p-1' or 'p-2' resolve seamlessly
+ * We no longer normalize patient IDs to a hardcoded demo patient.
+ * Just return the ID.
  */
 export function normalizePatientId(id?: string): string {
-  if (!id || id === 'p-1' || id === DEFAULT_PATIENT_ID) {
-    return DEFAULT_PATIENT_ID;
-  }
-  if (id === 'p-2' || id === 'pat-sarah-chen-02') {
-    return 'pat-sarah-chen-02';
-  }
+  if (!id) return '';
   return id;
 }
 
@@ -671,4 +667,58 @@ export async function getPatientOverview(patientId: string = DEFAULT_PATIENT_ID)
       totalDiagnoses: diagnoses.length,
     },
   };
+}
+
+/**
+ * MANUAL RECORD ENTRY
+ */
+
+export async function addManualMedicalEvent(data: Omit<MedicalEvent, 'id' | 'createdAt'>): Promise<MedicalEvent> {
+  const event = await timelineRepository.create({
+    ...data,
+    isManualEntry: true,
+  });
+  return event;
+}
+
+export async function addManualDiagnosis(data: Omit<Diagnosis, 'id'>): Promise<Diagnosis> {
+  const diag = await diagnosisRepository.create({
+    ...data,
+    isManualEntry: true,
+  } as Diagnosis);
+  return diag;
+}
+
+export async function addManualMedication(data: Omit<Medication, 'id'>): Promise<Medication> {
+  const med = await medicationRepository.create({
+    ...data,
+    isManualEntry: true,
+  } as Medication);
+  return med;
+}
+
+export async function addManualLabResult(data: Omit<LabResult, 'id'>): Promise<LabResult> {
+  const lab = await labResultRepository.create({
+    ...data,
+    isManualEntry: true,
+  } as LabResult);
+  return lab;
+}
+
+export async function updateRecord(type: 'MedicalEvent' | 'Diagnosis' | 'Medication' | 'LabResult', id: string, updates: any) {
+  switch (type) {
+    case 'MedicalEvent': return timelineRepository.update(id, updates);
+    case 'Diagnosis': return diagnosisRepository.update(id, updates);
+    case 'Medication': return medicationRepository.update(id, updates);
+    case 'LabResult': return labResultRepository.update(id, updates);
+  }
+}
+
+export async function deleteRecord(type: 'MedicalEvent' | 'Diagnosis' | 'Medication' | 'LabResult', id: string) {
+  switch (type) {
+    case 'MedicalEvent': return timelineRepository.delete(id);
+    case 'Diagnosis': return diagnosisRepository.delete(id);
+    case 'Medication': return medicationRepository.delete(id);
+    case 'LabResult': return labResultRepository.delete(id);
+  }
 }

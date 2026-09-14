@@ -254,7 +254,7 @@ export function DocumentDetailDrawer({
                       {/* Patient Context Banner */}
                       <div className="bg-zinc-50 p-2.5 rounded font-sans text-[11px] text-zinc-600 grid grid-cols-2 gap-2 border border-zinc-200/60">
                         <div>
-                          <strong>PATIENT:</strong> Arun Mathew
+                          <strong>PATIENT:</strong> {doc.patientId}
                         </div>
                         <div>
                           <strong>ATTENDING:</strong> {doc.providerName || 'Physician on Record'}

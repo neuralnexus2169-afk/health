@@ -6,15 +6,11 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  Building2,
-  User,
-  Calendar,
-  Layers,
-  ArrowRight,
   ShieldCheck,
   FileUp,
+  Trash2,
 } from 'lucide-react';
-import { DocumentType, DocumentStatus } from '../../types/medical';
+import { DocumentType } from '../../types/medical';
 import {
   documentStorage,
   validateDocumentFile,
@@ -49,7 +45,19 @@ const PRESET_FACILITIES = [
   'Other Healthcare Facility',
 ];
 
-type UploadStep = 'select' | 'uploading' | 'processing' | 'complete';
+type FileStatus = 'pending' | 'uploading' | 'processing' | 'ready' | 'error';
+
+interface SelectedFile {
+  id: string;
+  file: File;
+  status: FileStatus;
+  progress: number;
+  error?: string;
+  documentType: DocumentType;
+  documentDate: string;
+  facilityName: string;
+  providerName: string;
+}
 
 export function DocumentUploadModal({
   isOpen,
@@ -60,78 +68,65 @@ export function DocumentUploadModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isDragging, setIsDragging] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
-
-  // Form Fields
-  const [documentType, setDocumentType] = useState<DocumentType>('Consultation Note');
-  const [documentDate, setDocumentDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  );
-  const [facilityName, setFacilityName] = useState<string>('Meridian Medical Centre');
-  const [providerName, setProviderName] = useState<string>('Dr. Sarah Jenkins, MD');
-
-  // Pipeline State
-  const [step, setStep] = useState<UploadStep>('select');
-  const [progress, setProgress] = useState(0);
-  const [processingStatusText, setProcessingStatusText] = useState('Uploading document to secure storage...');
+  const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
+  const [globalError, setGlobalError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset state on close
   useEffect(() => {
     if (!isOpen) {
-      setSelectedFile(null);
-      setFilePreviewUrl(null);
-      setValidationError(null);
-      setStep('select');
-      setProgress(0);
+      setSelectedFiles([]);
+      setGlobalError(null);
+      setIsSubmitting(false);
     }
   }, [isOpen]);
 
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen && step !== 'uploading' && step !== 'processing') {
+      if (e.key === 'Escape' && isOpen && !isSubmitting) {
         onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, step]);
+  }, [isOpen, onClose, isSubmitting]);
 
   if (!isOpen) return null;
 
-  const handleFileSelect = (file: File) => {
-    setValidationError(null);
-    const validation = validateDocumentFile(file);
-    if (!validation.isValid) {
-      setValidationError(validation.error || 'Invalid file.');
-      return;
-    }
+  const detectDocumentType = (fileName: string): DocumentType => {
+    const lower = fileName.toLowerCase();
+    if (lower.includes('lab') || lower.includes('blood')) return 'Lab Report';
+    if (lower.includes('rx') || lower.includes('prescription')) return 'Prescription';
+    if (lower.includes('discharge')) return 'Discharge Summary';
+    if (lower.includes('xray') || lower.includes('mri') || lower.includes('imaging')) return 'Imaging Report';
+    if (lower.includes('vaccine') || lower.includes('immunization')) return 'Vaccination Record';
+    return 'Consultation Note';
+  };
 
-    setSelectedFile(file);
+  const handleFilesSelect = (files: FileList | File[]) => {
+    setGlobalError(null);
+    const newSelectedFiles: SelectedFile[] = [];
 
-    // Auto-detect type from file name if helpful
-    const lower = file.name.toLowerCase();
-    if (lower.includes('lab') || lower.includes('blood')) {
-      setDocumentType('Lab Report');
-    } else if (lower.includes('rx') || lower.includes('prescription')) {
-      setDocumentType('Prescription');
-    } else if (lower.includes('discharge')) {
-      setDocumentType('Discharge Summary');
-    } else if (lower.includes('xray') || lower.includes('mri') || lower.includes('imaging')) {
-      setDocumentType('Imaging Report');
-    } else if (lower.includes('vaccine') || lower.includes('immunization')) {
-      setDocumentType('Vaccination Record');
-    }
+    Array.from(files).forEach((file) => {
+      const validation = validateDocumentFile(file);
+      
+      const newFile: SelectedFile = {
+        id: Math.random().toString(36).substring(2, 9),
+        file,
+        status: validation.isValid ? 'pending' : 'error',
+        progress: 0,
+        error: validation.isValid ? undefined : validation.error || 'Unsupported file type or size.',
+        documentType: detectDocumentType(file.name),
+        documentDate: new Date().toISOString().split('T')[0],
+        facilityName: 'Meridian Medical Centre',
+        providerName: '',
+      };
+      
+      newSelectedFiles.push(newFile);
+    });
 
-    // Create local preview if image
-    if (file.type.startsWith('image/')) {
-      const url = URL.createObjectURL(file);
-      setFilePreviewUrl(url);
-    } else {
-      setFilePreviewUrl(null);
-    }
+    setSelectedFiles((prev) => [...prev, ...newSelectedFiles]);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -147,71 +142,110 @@ export function DocumentUploadModal({
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFileSelect(e.dataTransfer.files[0]);
+      handleFilesSelect(e.dataTransfer.files);
     }
+  };
+  
+  const handleRemoveFile = (id: string) => {
+    setSelectedFiles((prev) => prev.filter((f) => f.id !== id));
+  };
+  
+  const handleUpdateFileMetadata = (id: string, updates: Partial<SelectedFile>) => {
+    setSelectedFiles((prev) => 
+      prev.map((f) => (f.id === id ? { ...f, ...updates } : f))
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFile) {
-      setValidationError('Please select a medical document to upload.');
+    
+    const pendingFiles = selectedFiles.filter(f => f.status === 'pending' || f.status === 'error');
+    const validPendingFiles = selectedFiles.filter(f => f.status === 'pending');
+    
+    if (validPendingFiles.length === 0) {
+      setGlobalError('Please select at least one valid medical document to upload.');
       return;
     }
 
-    setStep('uploading');
-    setProgress(20);
-    setProcessingStatusText('Encrypting & storing file in document storage...');
+    setIsSubmitting(true);
+    
+    // Process files with limited concurrency (e.g., 2 at a time)
+    const concurrency = 2;
+    let index = 0;
+    
+    const processNext = async (): Promise<void> => {
+      if (index >= validPendingFiles.length) return;
+      
+      const fileToUpload = validPendingFiles[index++];
+      
+      // Update status to uploading
+      handleUpdateFileMetadata(fileToUpload.id, { status: 'uploading', progress: 20 });
+      
+      try {
+        // 1. Store file in decoupled DocumentStorage abstraction
+        await documentStorage.upload(fileToUpload.file);
+        handleUpdateFileMetadata(fileToUpload.id, { progress: 55, status: 'processing' });
 
-    try {
-      // 1. Store file in decoupled DocumentStorage abstraction
-      const stored = await documentStorage.upload(selectedFile);
-      setProgress(55);
+        const safeName = sanitizeFileName(fileToUpload.file.name);
+        const newDocId = `doc_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
-      // 2. Set status to "Processing"
-      setStep('processing');
-      setProcessingStatusText('Ingesting record into clinical pipeline...');
-      setProgress(75);
+        // Create Document in database/service repository
+        await createDocument({
+          id: newDocId,
+          patientId,
+          fileName: safeName,
+          documentType: fileToUpload.documentType,
+          documentDate: fileToUpload.documentDate,
+          facilityName: fileToUpload.facilityName.trim() || 'Institutional Health Facility',
+          providerName: fileToUpload.providerName.trim() || undefined,
+          status: 'Processing',
+          pageCount: fileToUpload.file.type === 'application/pdf' ? 2 : 1, // Estimate for now
+          fileSizeBytes: fileToUpload.file.size,
+          extractedTextSnippet: `Ingested medical record: ${safeName}. Clinical extraction and terminology normalization scheduled.`,
+        });
 
-      const safeName = sanitizeFileName(selectedFile.name);
-      const newDocId = `doc_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        // Trigger AI Extraction asynchronously here
+        fetch(`/api/documents/${newDocId}/extract`, { method: 'POST' }).catch(err => {
+            console.error('Failed to trigger background extraction for', newDocId, err);
+        });
 
-      // Create Document in database/service repository
-      await createDocument({
-        id: newDocId,
-        patientId,
-        fileName: safeName,
-        documentType,
-        documentDate,
-        facilityName: facilityName.trim() || 'Institutional Health Facility',
-        providerName: providerName.trim() || undefined,
-        status: 'Processing',
-        pageCount: selectedFile.type === 'application/pdf' ? 2 : 1,
-        fileSizeBytes: selectedFile.size,
-        extractedTextSnippet: `Ingested medical record: ${safeName}. Clinical extraction and terminology normalization scheduled.`,
-      });
-
-      setProgress(90);
-      setProcessingStatusText('Finalizing document index...');
-
-      // Simulated transition to complete
-      setTimeout(() => {
-        setProgress(100);
-        setStep('complete');
-        onDocumentCreated();
-      }, 1200);
-    } catch (err: any) {
-      console.error('Document upload error:', err);
-      setValidationError(err.message || 'Failed to upload document.');
-      setStep('select');
+        handleUpdateFileMetadata(fileToUpload.id, { progress: 100, status: 'ready' });
+      } catch (err: any) {
+        console.error(`Document upload error for ${fileToUpload.file.name}:`, err);
+        handleUpdateFileMetadata(fileToUpload.id, { 
+          status: 'error', 
+          error: err.message || 'Failed to upload document.' 
+        });
+      }
+      
+      await processNext();
+    };
+    
+    const workers = [];
+    for (let i = 0; i < concurrency; i++) {
+      workers.push(processNext());
     }
+    
+    await Promise.all(workers);
+    
+    // Check if any uploads succeeded to trigger parent refresh
+    const anySuccess = selectedFiles.some(f => f.status === 'ready') || validPendingFiles.some(f => f.status === 'ready' || !f.error); // We don't check state since it might lag
+    if (anySuccess) {
+       onDocumentCreated();
+    }
+    
+    setIsSubmitting(false);
   };
+  
+  const hasPendingOrErrorFiles = selectedFiles.some(f => f.status === 'pending' || f.status === 'error');
+  const allComplete = selectedFiles.length > 0 && selectedFiles.every(f => f.status === 'ready');
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div
         onClick={() => {
-          if (step !== 'uploading' && step !== 'processing') {
+          if (!isSubmitting) {
             onClose();
           }
         }}
@@ -219,7 +253,7 @@ export function DocumentUploadModal({
       />
 
       <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-        <div className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-xl border border-zinc-200 animate-in zoom-in-95 duration-200">
+        <div className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-zinc-200 animate-in zoom-in-95 duration-200">
           {/* Modal Header */}
           <div className="flex items-center justify-between p-5 border-b border-zinc-100 bg-zinc-50/70">
             <div className="flex items-center gap-3">
@@ -228,15 +262,15 @@ export function DocumentUploadModal({
               </div>
               <div>
                 <h3 className="text-base font-bold text-zinc-900">
-                  Upload Medical Document
+                  Upload Medical Records
                 </h3>
                 <p className="text-xs text-zinc-500">
-                  Securely index PDF reports, prescriptions, and lab records
+                  Upload one or more medical documents. HealthTimeline will extract the information and let you review it before adding it to your record.
                 </p>
               </div>
             </div>
 
-            {step !== 'uploading' && step !== 'processing' && (
+            {!isSubmitting && (
               <button
                 type="button"
                 onClick={onClose}
@@ -249,59 +283,23 @@ export function DocumentUploadModal({
 
           {/* Modal Body */}
           <div className="p-6">
-            {step === 'complete' ? (
+            {allComplete && !isSubmitting ? (
               <div className="py-8 text-center space-y-4">
                 <div className="mx-auto w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 animate-in zoom-in-50 duration-300">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <div>
                   <h4 className="text-lg font-bold text-zinc-900">
-                    Document Ingested Successfully
+                    Documents Queued Successfully
                   </h4>
                   <p className="text-sm text-zinc-500 max-w-sm mx-auto mt-1">
-                    "{selectedFile?.name}" has been stored and registered in the patient's record vault.
+                    Your documents have been stored securely and are being processed.
                   </p>
-                </div>
-                <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-600 flex items-center justify-center gap-2 max-w-sm mx-auto">
-                  <Clock className="w-4 h-4 text-teal-800 shrink-0" />
-                  <span>Status: <strong>Processing</strong> (Indexing underway)</span>
                 </div>
                 <div className="pt-4">
                   <Button variant="primary" fullWidth onClick={onClose}>
                     Done
                   </Button>
-                </div>
-              </div>
-            ) : step === 'uploading' || step === 'processing' ? (
-              <div className="py-8 text-center space-y-5">
-                <div className="mx-auto w-14 h-14 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-800 animate-pulse">
-                  <Clock className="w-7 h-7 animate-spin" />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-base font-bold text-zinc-900">
-                    {step === 'uploading' ? 'Uploading Document...' : 'Processing Medical Record...'}
-                  </h4>
-                  <p className="text-xs text-zinc-500">
-                    {processingStatusText}
-                  </p>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="w-full max-w-sm mx-auto space-y-1.5">
-                  <div className="w-full bg-zinc-100 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="bg-teal-700 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <div className="text-right text-[11px] font-semibold text-zinc-400">
-                    {progress}%
-                  </div>
-                </div>
-
-                <div className="p-3 bg-zinc-50 rounded-xl border border-zinc-200 text-xs text-zinc-500 max-w-sm mx-auto flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-teal-800 shrink-0" />
-                  <span>Client-side decoupled storage abstraction</span>
                 </div>
               </div>
             ) : (
@@ -312,161 +310,149 @@ export function DocumentUploadModal({
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
                     isDragging
                       ? 'border-teal-700 bg-teal-50/50'
-                      : selectedFile
-                      ? 'border-teal-700/60 bg-teal-50/20'
                       : 'border-zinc-300 hover:border-zinc-400 bg-zinc-50/50 hover:bg-zinc-50'
                   }`}
                 >
                   <input
                     ref={fileInputRef}
                     type="file"
+                    multiple
                     accept=".pdf,.png,.jpg,.jpeg"
                     className="hidden"
                     onChange={(e) => {
                       if (e.target.files && e.target.files.length > 0) {
-                        handleFileSelect(e.target.files[0]);
+                        handleFilesSelect(e.target.files);
+                        if (fileInputRef.current) {
+                           fileInputRef.current.value = ''; // Reset input so same file can be selected again
+                        }
                       }
                     }}
                   />
 
-                  {selectedFile ? (
-                    <div className="flex items-center justify-between gap-3 text-left">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-lg bg-teal-50 border border-teal-200/80 flex items-center justify-center text-teal-800 shrink-0">
-                          <FileText className="w-5 h-5" />
-                        </div>
-                        <div className="truncate">
-                          <div className="text-sm font-bold text-zinc-900 truncate">
-                            {selectedFile.name}
-                          </div>
-                          <div className="text-xs text-zinc-400">
-                            {(selectedFile.size / 1024).toFixed(0)} KB · Ready for ingestion
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedFile(null);
-                          setFilePreviewUrl(null);
-                        }}
-                        className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                        title="Remove file"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                  <div className="space-y-2">
+                    <div className="mx-auto w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-400">
+                      <Upload className="w-5 h-5" />
                     </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="mx-auto w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-400">
-                        <Upload className="w-5 h-5" />
-                      </div>
-                      <div className="text-sm font-semibold text-zinc-800">
-                        Drop a medical document here, or{' '}
-                        <span className="text-teal-800 underline">browse files</span>
-                      </div>
-                      <p className="text-xs text-zinc-400">
-                        PDF, JPG or PNG · Maximum 10 MB
-                      </p>
+                    <div className="text-sm font-semibold text-zinc-800">
+                      Click to select files or drag and drop
                     </div>
-                  )}
+                    <p className="text-xs text-zinc-400">
+                      Supported formats: PDF, JPG, JPEG, PNG
+                    </p>
+                  </div>
                 </div>
 
                 {/* Validation Error Banner */}
-                {validationError && (
+                {globalError && (
                   <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 flex items-center gap-2 text-xs text-rose-800">
                     <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                    <span>{validationError}</span>
+                    <span>{globalError}</span>
+                  </div>
+                )}
+                
+                {selectedFiles.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="text-sm font-semibold text-zinc-800">
+                      Selected documents ({selectedFiles.length})
+                    </div>
+                    <div className="max-h-64 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                      {selectedFiles.map((f) => (
+                        <div key={f.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg border border-zinc-200 bg-white shadow-xs">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 ${
+                              f.status === 'ready' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
+                              f.status === 'error' ? 'bg-rose-50 border-rose-200 text-rose-700' :
+                              'bg-zinc-50 border-zinc-200 text-zinc-500'
+                            }`}>
+                              {f.status === 'ready' ? <CheckCircle2 className="w-5 h-5" /> : 
+                               f.status === 'error' ? <AlertCircle className="w-5 h-5" /> : 
+                               <FileText className="w-5 h-5" />}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-sm font-bold text-zinc-900 truncate" title={f.file.name}>
+                                {f.file.name}
+                              </div>
+                              <div className="text-xs flex items-center gap-2">
+                                <span className="text-zinc-500">{(f.file.size / 1024).toFixed(0)} KB</span>
+                                {f.status === 'error' ? (
+                                  <span className="text-rose-600 font-medium truncate">{f.error}</span>
+                                ) : f.status === 'ready' ? (
+                                  <span className="text-emerald-600 font-medium">Ready</span>
+                                ) : f.status === 'uploading' || f.status === 'processing' ? (
+                                  <span className="text-teal-600 font-medium flex items-center gap-1">
+                                    <Clock className="w-3 h-3 animate-spin" /> {f.status === 'uploading' ? 'Uploading...' : 'Processing...'}
+                                  </span>
+                                ) : (
+                                  <span className="text-zinc-400">Pending</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* File metadata overrides (only editable when pending or error) */}
+                          {(f.status === 'pending' || f.status === 'error') && !f.error && (
+                             <div className="flex items-center gap-2 w-full sm:w-auto">
+                               <select 
+                                 className="text-xs bg-zinc-50 border border-zinc-200 rounded px-2 py-1 max-w-[120px]"
+                                 value={f.documentType}
+                                 onChange={(e) => handleUpdateFileMetadata(f.id, { documentType: e.target.value as DocumentType })}
+                               >
+                                  {DOCUMENT_TYPES.map(type => (
+                                    <option key={type} value={type}>{type}</option>
+                                  ))}
+                               </select>
+                               <input 
+                                  type="date"
+                                  className="text-xs bg-zinc-50 border border-zinc-200 rounded px-2 py-1 max-w-[120px]"
+                                  value={f.documentDate}
+                                  onChange={(e) => handleUpdateFileMetadata(f.id, { documentDate: e.target.value })}
+                               />
+                             </div>
+                          )}
+                          
+                          <div className="flex items-center shrink-0 ml-auto sm:ml-0">
+                             {(f.status === 'pending' || f.status === 'error') && !isSubmitting && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveFile(f.id)}
+                                  className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                  title="Remove file"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                             )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
-                {/* Metadata Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {/* Document Type */}
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                      Document Type
-                    </label>
-                    <select
-                      value={documentType}
-                      onChange={(e) => setDocumentType(e.target.value as DocumentType)}
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs font-medium text-zinc-800 focus:outline-hidden focus:ring-2 focus:ring-teal-700/20 focus:border-teal-700 cursor-pointer"
-                    >
-                      {DOCUMENT_TYPES.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Document Date */}
-                  <div>
-                    <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                      Document Date
-                    </label>
-                    <input
-                      type="date"
-                      value={documentDate}
-                      onChange={(e) => setDocumentDate(e.target.value)}
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs font-medium text-zinc-800 focus:outline-hidden focus:ring-2 focus:ring-teal-700/20 focus:border-teal-700"
-                    />
-                  </div>
-
-                  {/* Healthcare Facility */}
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                      Healthcare Facility
-                    </label>
-                    <input
-                      type="text"
-                      list="facility-presets"
-                      placeholder="e.g. Meridian Medical Centre, CityCare Hospital..."
-                      value={facilityName}
-                      onChange={(e) => setFacilityName(e.target.value)}
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs font-medium text-zinc-800 focus:outline-hidden focus:ring-2 focus:ring-teal-700/20 focus:border-teal-700"
-                    />
-                    <datalist id="facility-presets">
-                      {PRESET_FACILITIES.map((fac) => (
-                        <option key={fac} value={fac} />
-                      ))}
-                    </datalist>
-                  </div>
-
-                  {/* Attending Provider */}
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                      Attending Provider (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Dr. Sarah Jenkins, MD"
-                      value={providerName}
-                      onChange={(e) => setProviderName(e.target.value)}
-                      className="w-full px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-xs font-medium text-zinc-800 focus:outline-hidden focus:ring-2 focus:ring-teal-700/20 focus:border-teal-700"
-                    />
-                  </div>
-                </div>
-
                 {/* Submit Actions */}
-                <div className="pt-2 flex items-center justify-end gap-3 border-t border-zinc-100">
-                  <Button variant="secondary" size="sm" onClick={onClose} type="button">
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    type="submit"
-                    disabled={!selectedFile}
-                    icon={<Upload className="w-3.5 h-3.5" />}
-                  >
-                    Upload and Process
-                  </Button>
+                <div className="pt-2 flex items-center justify-between border-t border-zinc-100">
+                  <div className="text-[11px] text-zinc-500 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-teal-700" />
+                    <span>Processed locally & stored securely</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button variant="secondary" size="sm" onClick={onClose} type="button" disabled={isSubmitting}>
+                      Cancel
+                    </Button>
+                    {hasPendingOrErrorFiles && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        type="submit"
+                        disabled={isSubmitting || selectedFiles.filter(f => f.status === 'pending').length === 0}
+                        icon={isSubmitting ? <Clock className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                      >
+                        {isSubmitting ? 'Processing...' : `Upload ${selectedFiles.filter(f => !f.error && f.status === 'pending').length} Document(s)`}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </form>
             )}

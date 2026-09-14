@@ -43,18 +43,24 @@ export interface ITimelineRepository {
   findByPatientId(patientId: string): Promise<MedicalEvent[]>;
   findById(id: string): Promise<MedicalEvent | null>;
   create(event: Omit<MedicalEvent, 'createdAt'>): Promise<MedicalEvent>;
+  update(id: string, updates: Partial<MedicalEvent>): Promise<MedicalEvent | null>;
+  delete(id: string): Promise<boolean>;
 }
 
 export interface IDiagnosisRepository {
   findByPatientId(patientId: string): Promise<Diagnosis[]>;
   findById(id: string): Promise<Diagnosis | null>;
   create(diagnosis: Diagnosis): Promise<Diagnosis>;
+  update(id: string, updates: Partial<Diagnosis>): Promise<Diagnosis | null>;
+  delete(id: string): Promise<boolean>;
 }
 
 export interface IMedicationRepository {
   findByPatientId(patientId: string): Promise<Medication[]>;
   findById(id: string): Promise<Medication | null>;
   create(medication: Medication): Promise<Medication>;
+  update(id: string, updates: Partial<Medication>): Promise<Medication | null>;
+  delete(id: string): Promise<boolean>;
 }
 
 export interface ILabResultRepository {
@@ -62,17 +68,28 @@ export interface ILabResultRepository {
   findByTestName(patientId: string, testName: string): Promise<LabResult[]>;
   findById(id: string): Promise<LabResult | null>;
   create(labResult: LabResult): Promise<LabResult>;
+  update(id: string, updates: Partial<LabResult>): Promise<LabResult | null>;
+  delete(id: string): Promise<boolean>;
 }
 
 export interface ISourceReferenceRepository {
   findById(id: string): Promise<SourceReference | null>;
   findByDocumentId(documentId: string): Promise<SourceReference[]>;
+  findByPatientId(patientId: string): Promise<SourceReference[]>;
   findAll(): Promise<SourceReference[]>;
   create(ref: Omit<SourceReference, 'createdAt'>): Promise<SourceReference>;
 }
 
 export interface IContradictionRepository {
   findByPatientId(patientId: string): Promise<MedicalContradiction[]>;
+  findById(id: string): Promise<MedicalContradiction | null>;
+  create(contradiction: MedicalContradiction): Promise<MedicalContradiction>;
+  updateReviewStatus(
+    id: string,
+    reviewStatus: 'Unreviewed' | 'Reviewed',
+    notes?: string,
+    reviewerName?: string
+  ): Promise<MedicalContradiction | null>;
 }
 
 export interface IDocumentExtractionRepository {

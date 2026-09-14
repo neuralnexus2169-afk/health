@@ -7,9 +7,14 @@ import { Patient } from '../../types/medical';
 interface AssistantPageProps {
   onNavigate: (route: NavigationRoute) => void;
   selectedPatientId?: string;
+  initialQuestion?: string;
 }
 
-export function AssistantPage({ onNavigate, selectedPatientId = 'pat-arun-mathew-01' }: AssistantPageProps) {
+export function AssistantPage({
+  onNavigate,
+  selectedPatientId = '',
+  initialQuestion,
+}: AssistantPageProps) {
   const [patient, setPatient] = useState<Patient | null>(null);
 
   useEffect(() => {
@@ -22,7 +27,8 @@ export function AssistantPage({ onNavigate, selectedPatientId = 'pat-arun-mathew
     <div className="w-full">
       <ChatInterface
         patientId={selectedPatientId}
-        patientName={patient?.name || 'Arun Mathew'}
+        patientName={patient?.name || ''}
+        initialQuestion={initialQuestion}
         onNavigate={onNavigate}
         onNavigateToDocument={(docId) => {
           onNavigate('documents');

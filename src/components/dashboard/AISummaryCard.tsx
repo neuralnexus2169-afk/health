@@ -24,7 +24,7 @@ interface AISummaryCardProps {
 }
 
 export function AISummaryCard({
-  patientId = 'pat-arun-mathew-01',
+  patientId = '',
   onOpenAssistant,
   onNavigate,
 }: AISummaryCardProps) {
@@ -64,6 +64,26 @@ export function AISummaryCard({
   useEffect(() => {
     loadData();
   }, [patientId]);
+
+  const overviewText =
+    summary?.content.overview ||
+    'Longitudinal review of documented medical encounters, stable chronic metabolic management, and therapeutic regimens synthesized from confirmed health records.';
+
+  const summaryPoints = React.useMemo(() => {
+    if (!overviewText) return [];
+    if (overviewText.includes('\n')) {
+      const lines = overviewText
+        .split('\n')
+        .map((l) => l.replace(/^[\s•\-\*]+/, '').trim())
+        .filter(Boolean);
+      if (lines.length > 0) return lines;
+    }
+    const sentences = overviewText
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    return sentences.length > 0 ? sentences : [overviewText];
+  }, [overviewText]);
 
   const formattedDate = summary?.createdAt
     ? new Date(summary.createdAt).toLocaleDateString('en-US', {
@@ -120,17 +140,24 @@ export function AISummaryCard({
             </span>
           </div>
 
-          {/* Overview text */}
+          {/* Overview bullet points */}
           {isLoading ? (
             <div className="space-y-2 py-1">
               <div className="h-4 bg-slate-200/70 rounded-md w-full animate-pulse" />
               <div className="h-4 bg-slate-200/70 rounded-md w-4/5 animate-pulse" />
             </div>
           ) : (
-            <p className="text-sm text-slate-700 leading-relaxed">
-              {summary?.content.overview ||
-                'Longitudinal review of documented medical encounters, stable chronic metabolic management, and therapeutic regimens synthesized from confirmed health records.'}
-            </p>
+            <ul id="dashboard-ai-summary-points" className="space-y-2 text-sm text-slate-700">
+              {summaryPoints.map((point, idx) => (
+                <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
+                  <span
+                    className="w-1.5 h-1.5 rounded-full bg-teal-600 mt-2 shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
           )}
 
           {/* Clinical Disclaimer */}

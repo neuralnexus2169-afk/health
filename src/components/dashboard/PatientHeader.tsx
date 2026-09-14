@@ -41,21 +41,31 @@ export function PatientHeader({ patient }: PatientHeaderProps) {
           </div>
         </div>
 
-        {/* High-level metrics: Last updated, Records, Providers */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 pt-4 lg:pt-0 border-t lg:border-t-0 border-zinc-100 lg:border-l lg:pl-8">
+        {/* High-level metrics: History Span, Records, Events, Providers */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-4 lg:pt-0 border-t lg:border-t-0 border-zinc-100 lg:border-l lg:pl-8">
           <div>
             <span className="text-xs text-zinc-400 font-medium block">
-              Last updated
+              History span
             </span>
             <div className="flex items-center gap-1.5 mt-1 text-sm font-semibold text-zinc-800">
-              <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-              <span>{patient.lastUpdated}</span>
+              <Calendar className="w-3.5 h-3.5 text-teal-600" />
+              <span>0 Yrs</span>
             </div>
           </div>
 
           <div>
             <span className="text-xs text-zinc-400 font-medium block">
-              Records
+              Medical events
+            </span>
+            <div className="flex items-center gap-1.5 mt-1 text-sm font-semibold text-zinc-800">
+              <span className="inline-block w-2 h-2 rounded-full bg-teal-600"></span>
+              <span>0 Events</span>
+            </div>
+          </div>
+
+          <div>
+            <span className="text-xs text-zinc-400 font-medium block">
+              Clinical records
             </span>
             <div className="flex items-center gap-1.5 mt-1 text-sm font-semibold text-zinc-800">
               <FileText className="w-3.5 h-3.5 text-zinc-400" />
@@ -63,9 +73,9 @@ export function PatientHeader({ patient }: PatientHeaderProps) {
             </div>
           </div>
 
-          <div className="col-span-2 sm:col-span-1">
+          <div>
             <span className="text-xs text-zinc-400 font-medium block">
-              Healthcare providers
+              Care providers
             </span>
             <div className="flex items-center gap-1.5 mt-1 text-sm font-semibold text-zinc-800">
               <Building2 className="w-3.5 h-3.5 text-zinc-400" />

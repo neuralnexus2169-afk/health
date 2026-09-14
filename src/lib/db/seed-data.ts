@@ -13,8 +13,8 @@ import {
 
 export const SEED_PATIENTS: Patient[] = [
   {
-    id: 'pat-arun-mathew-01',
-    name: 'Arun Mathew',
+    id: 'pat-john-doe-01',
+    name: 'John Doe',
     dateOfBirth: '1979-05-14',
     gender: 'Male',
     bloodGroup: 'B+',
@@ -103,7 +103,7 @@ export const SEED_PROVIDERS: HealthcareProvider[] = [
 export const SEED_DOCUMENTS: MedicalDocument[] = [
   {
     id: 'doc-2026-demo',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'consultation_2026_demo.pdf',
     documentType: 'Consultation Note',
     documentDate: '2026-09-10',
@@ -119,7 +119,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2018-consult',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'consultation_2018.pdf',
     documentType: 'Consultation Note',
     documentDate: '2018-05-10',
@@ -135,7 +135,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2018-rx',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'prescription_2018.pdf',
     documentType: 'Prescription',
     documentDate: '2018-05-10',
@@ -151,7 +151,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2018-lab',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'lab_report_2018.pdf',
     documentType: 'Lab Report',
     documentDate: '2018-05-08',
@@ -167,7 +167,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2019-consult',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'consultation_2019.pdf',
     documentType: 'Consultation Note',
     documentDate: '2019-06-14',
@@ -183,7 +183,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2019-lab',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'lab_report_2019.pdf',
     documentType: 'Lab Report',
     documentDate: '2019-06-11',
@@ -199,7 +199,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2020-consult',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'consultation_2020.pdf',
     documentType: 'Consultation Note',
     documentDate: '2020-09-22',
@@ -215,7 +215,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2020-rx',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'prescription_2020.pdf',
     documentType: 'Prescription',
     documentDate: '2020-09-22',
@@ -231,7 +231,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2021-consult',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'consultation_2021.pdf',
     documentType: 'Consultation Note',
     documentDate: '2021-10-18',
@@ -247,7 +247,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2021-lab',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'lab_report_2021.pdf',
     documentType: 'Lab Report',
     documentDate: '2021-10-15',
@@ -263,7 +263,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2022-consult',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'consultation_2022.pdf',
     documentType: 'Consultation Note',
     documentDate: '2022-11-05',
@@ -279,7 +279,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2022-lab',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'lab_report_2022.pdf',
     documentType: 'Lab Report',
     documentDate: '2022-11-02',
@@ -295,7 +295,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2023-discharge',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'discharge_summary_2023.pdf',
     documentType: 'Discharge Summary',
     documentDate: '2023-11-17',
@@ -311,7 +311,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2023-lab',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'lab_report_2023.pdf',
     documentType: 'Lab Report',
     documentDate: '2023-11-14',
@@ -327,7 +327,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2024-consult',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'consultation_2024.pdf',
     documentType: 'Consultation Note',
     documentDate: '2024-07-19',
@@ -343,7 +343,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2024-lab',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'lab_report_2024.pdf',
     documentType: 'Lab Report',
     documentDate: '2024-07-16',
@@ -359,7 +359,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2025-consult',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'specialist_consultation_2025.pdf',
     documentType: 'Consultation Note',
     documentDate: '2025-03-10',
@@ -375,7 +375,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2025-rx',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'prescription_2025.pdf',
     documentType: 'Prescription',
     documentDate: '2025-03-10',
@@ -391,7 +391,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2026-consult',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'consultation_note_2026.pdf',
     documentType: 'Consultation Note',
     documentDate: '2026-08-28',
@@ -407,7 +407,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2026-imaging',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'lumbar_spine_xray_2026.pdf',
     documentType: 'Imaging Report',
     documentDate: '2026-09-02',
@@ -423,7 +423,7 @@ export const SEED_DOCUMENTS: MedicalDocument[] = [
   },
   {
     id: 'doc-2026-lab',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     fileName: 'lab_report_2026.pdf',
     documentType: 'Lab Report',
     documentDate: '2026-08-24',
@@ -549,16 +549,60 @@ export const SEED_SOURCE_REFERENCES: SourceReference[] = [
 export const SEED_CONTRADICTIONS: MedicalContradiction[] = [
   {
     id: 'contra-01',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     category: 'Allergy',
     title: 'Discrepancy in Documented Penicillin Allergy',
-    description: 'A critical documentation mismatch exists between the initial outpatient consultation and the subsequent emergency hospital admission records.',
+    description:
+      'A critical documentation mismatch exists between outpatient consultation records documenting a childhood Penicillin allergy with rash and emergency hospital admission records documenting No Known Drug Allergies (NKDA).',
+    clinicalExplanation:
+      'These records contain conflicting allergy information. One record documents a childhood Penicillin allergy with maculopapular rash, while another clinical record explicitly asserts "No Known Drug Allergies (NKDA)". Review the source records to determine the current, accurate allergy status. No automatic clinical conclusion has been made.',
+    severity: 'High',
+    status: 'Unreviewed',
+    reviewStatus: 'Unreviewed',
+    firstFact: 'No Known Drug Allergies (NKDA)',
+    secondFact: 'Penicillin Allergy (Childhood history of widespread maculopapular rash)',
+    firstDate: '2023-11-17',
+    secondDate: '2018-05-10',
+    firstProvider: 'Dr. Robert Torres, MD, FACC',
+    secondProvider: 'Dr. Sarah Jenkins, MD',
+    firstFacility: 'CityCare Hospital',
+    secondFacility: 'Meridian Medical Centre',
+    firstSourceReference:
+      'Emergency Department Intake Summary · Allergies: No Known Drug Allergies (NKDA).',
+    secondSourceReference:
+      'Allergies: Penicillin (Childhood history of widespread maculopapular rash requiring antihistamines).',
+    firstDocument: {
+      documentId: 'doc-2023-discharge',
+      documentFileName: 'discharge_summary_2023.pdf',
+      documentDate: '2023-11-17',
+      facilityName: 'CityCare Hospital',
+      providerName: 'Dr. Robert Torres, MD, FACC',
+      pageNumber: 1,
+      quote: 'Emergency Department Intake Summary · Allergies: No Known Drug Allergies (NKDA).',
+      fact: 'No Known Drug Allergies (NKDA)',
+      sourceReferenceId: 'src-ref-08',
+      eventId: 'evt-2023-01',
+    },
+    secondDocument: {
+      documentId: 'doc-2018-consult',
+      documentFileName: 'consultation_2018.pdf',
+      documentDate: '2018-05-10',
+      facilityName: 'Meridian Medical Centre',
+      providerName: 'Dr. Sarah Jenkins, MD',
+      pageNumber: 1,
+      quote: 'Allergies: Penicillin (Childhood history of widespread maculopapular rash requiring antihistamines).',
+      fact: 'Penicillin — Childhood maculopapular rash requiring antihistamines',
+      sourceReferenceId: 'src-ref-01',
+      eventId: 'evt-2018-02',
+    },
     sourceA: {
       documentId: 'doc-2018-consult',
       documentFileName: 'consultation_2018.pdf',
       documentDate: '2018-05-10',
       pageNumber: 1,
       quote: 'Allergies: Penicillin (Childhood history of widespread maculopapular rash requiring antihistamines).',
+      facilityName: 'Meridian Medical Centre',
+      providerName: 'Dr. Sarah Jenkins, MD',
     },
     sourceB: {
       documentId: 'doc-2023-discharge',
@@ -566,16 +610,16 @@ export const SEED_CONTRADICTIONS: MedicalContradiction[] = [
       documentDate: '2023-11-17',
       pageNumber: 1,
       quote: 'Emergency Department Intake Summary · Allergies: No Known Drug Allergies (NKDA).',
+      facilityName: 'CityCare Hospital',
+      providerName: 'Dr. Robert Torres, MD, FACC',
     },
-    severity: 'High',
-    status: 'Unresolved',
   },
 ];
 
 export const SEED_DIAGNOSES: Diagnosis[] = [
   {
     id: 'diag-t2d-01',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     name: 'Type 2 Diabetes Mellitus',
     status: 'Active',
     firstDocumentedDate: '2018-05-10',
@@ -589,7 +633,7 @@ export const SEED_DIAGNOSES: Diagnosis[] = [
   },
   {
     id: 'diag-htn-02',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     name: 'Essential Hypertension',
     status: 'Active',
     firstDocumentedDate: '2020-09-22',
@@ -603,7 +647,7 @@ export const SEED_DIAGNOSES: Diagnosis[] = [
   },
   {
     id: 'diag-dyslipid-03',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     name: 'Hyperlipidemia',
     status: 'Active',
     firstDocumentedDate: '2021-10-15',
@@ -616,7 +660,7 @@ export const SEED_DIAGNOSES: Diagnosis[] = [
   },
   {
     id: 'diag-hyperglyc-04',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     name: 'Acute Hyperglycemic Decompensation',
     status: 'Resolved',
     firstDocumentedDate: '2023-11-14',
@@ -634,7 +678,7 @@ export const SEED_MEDICATIONS: Medication[] = [
   // Current active medications
   {
     id: 'med-metformin-01',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     name: 'Metformin',
     genericName: 'Metformin Hydrochloride (Extended Release)',
     dosage: '500 mg',
@@ -652,7 +696,7 @@ export const SEED_MEDICATIONS: Medication[] = [
   },
   {
     id: 'med-amlodipine-02',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     name: 'Amlodipine',
     genericName: 'Amlodipine Besylate',
     dosage: '5 mg',
@@ -670,7 +714,7 @@ export const SEED_MEDICATIONS: Medication[] = [
   },
   {
     id: 'med-empagliflozin-03',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     name: 'Empagliflozin',
     genericName: 'Empagliflozin (Jardiance)',
     dosage: '10 mg',
@@ -690,7 +734,7 @@ export const SEED_MEDICATIONS: Medication[] = [
   // Historical / Discontinued medications demonstrating changes over time
   {
     id: 'med-glimepiride-04',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     name: 'Glimepiride',
     genericName: 'Glimepiride',
     dosage: '1 mg',
@@ -709,7 +753,7 @@ export const SEED_MEDICATIONS: Medication[] = [
   },
   {
     id: 'med-metformin-titration-05',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     name: 'Metformin (Titrated temporary high dose)',
     genericName: 'Metformin Hydrochloride',
     dosage: '1000 mg',
@@ -732,7 +776,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   // 2018: 6.4, 2019: 6.6, 2021: 7.1, 2022: 7.6, 2023: 8.0, 2024: 7.5, 2026: 6.8
   {
     id: 'lab-a1c-2018',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Hemoglobin A1c (HbA1c)',
     parameterName: 'HbA1c',
     value: 6.4,
@@ -749,7 +793,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   },
   {
     id: 'lab-a1c-2019',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Hemoglobin A1c (HbA1c)',
     parameterName: 'HbA1c',
     value: 6.6,
@@ -766,7 +810,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   },
   {
     id: 'lab-a1c-2021',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Hemoglobin A1c (HbA1c)',
     parameterName: 'HbA1c',
     value: 7.1,
@@ -783,7 +827,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   },
   {
     id: 'lab-a1c-2022',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Hemoglobin A1c (HbA1c)',
     parameterName: 'HbA1c',
     value: 7.6,
@@ -800,7 +844,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   },
   {
     id: 'lab-a1c-2023',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Hemoglobin A1c (HbA1c)',
     parameterName: 'HbA1c',
     value: 8.0,
@@ -817,7 +861,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   },
   {
     id: 'lab-a1c-2024',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Hemoglobin A1c (HbA1c)',
     parameterName: 'HbA1c',
     value: 7.5,
@@ -834,7 +878,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   },
   {
     id: 'lab-a1c-2026',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Hemoglobin A1c (HbA1c)',
     parameterName: 'HbA1c',
     value: 6.8,
@@ -853,7 +897,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   // Supporting tests across the years
   {
     id: 'lab-glucose-2018',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Fasting Plasma Glucose',
     parameterName: 'Fasting Glucose',
     value: 134,
@@ -869,7 +913,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   },
   {
     id: 'lab-lipid-ldl-2022',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Lipid Panel',
     parameterName: 'LDL Cholesterol',
     value: 116,
@@ -885,7 +929,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   },
   {
     id: 'lab-glucose-2023',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Serum Glucose (Random/Admission)',
     parameterName: 'Glucose',
     value: 218,
@@ -901,7 +945,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   },
   {
     id: 'lab-creat-2023',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Comprehensive Metabolic Panel',
     parameterName: 'Serum Creatinine',
     value: 1.05,
@@ -917,7 +961,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   },
   {
     id: 'lab-lipid-ldl-2026',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Lipid Profile',
     parameterName: 'LDL Cholesterol',
     value: 94,
@@ -933,7 +977,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   },
   {
     id: 'lab-lipid-total-2026',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Lipid Profile',
     parameterName: 'Total Cholesterol',
     value: 168,
@@ -949,7 +993,7 @@ export const SEED_LAB_RESULTS: LabResult[] = [
   },
   {
     id: 'lab-lipid-trig-2026',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     testName: 'Lipid Profile',
     parameterName: 'Triglycerides',
     value: 130,
@@ -969,7 +1013,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   // 2018
   {
     id: 'evt-2018-01',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Laboratory',
     eventDate: '2018-05-08',
     title: 'Baseline Glycemic & Metabolic Labs',
@@ -985,7 +1029,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   },
   {
     id: 'evt-2018-02',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Consultation',
     eventDate: '2018-05-10',
     title: 'Initial Internal Medicine Consultation',
@@ -1001,7 +1045,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   },
   {
     id: 'evt-2018-03',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Medication',
     eventDate: '2018-05-10',
     title: 'Metformin Initial Prescription',
@@ -1019,7 +1063,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   // 2019
   {
     id: 'evt-2019-01',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Laboratory',
     eventDate: '2019-06-11',
     title: 'Annual Diabetes Surveillance Bloodwork',
@@ -1035,7 +1079,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   },
   {
     id: 'evt-2019-02',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Consultation',
     eventDate: '2019-06-14',
     title: 'Diabetes 1-Year Follow-up',
@@ -1052,7 +1096,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   // 2020
   {
     id: 'evt-2020-01',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Consultation',
     eventDate: '2020-09-22',
     title: 'Cardiovascular Evaluation for Elevated BP',
@@ -1068,7 +1112,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   },
   {
     id: 'evt-2020-02',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Diagnosis',
     eventDate: '2020-09-22',
     title: 'Diagnosis of Essential Hypertension',
@@ -1084,7 +1128,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   },
   {
     id: 'evt-2020-03',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Medication',
     eventDate: '2020-09-22',
     title: 'Amlodipine Prescription',
@@ -1102,7 +1146,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   // 2021
   {
     id: 'evt-2021-01',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Laboratory',
     eventDate: '2021-10-15',
     title: 'Comprehensive Metabolic & Glycemic Labs',
@@ -1118,7 +1162,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   },
   {
     id: 'evt-2021-02',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Consultation',
     eventDate: '2021-10-18',
     title: 'Diabetes Follow-up & Medication Review',
@@ -1135,7 +1179,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   // 2022
   {
     id: 'evt-2022-01',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Laboratory',
     eventDate: '2022-11-02',
     title: 'Lipid Profile & Glycemic Investigations',
@@ -1151,7 +1195,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   },
   {
     id: 'evt-2022-02',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Consultation',
     eventDate: '2022-11-05',
     title: 'Hospital Outpatient Consultation & Medication Adjustment',
@@ -1168,7 +1212,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   // 2023
   {
     id: 'evt-2023-01',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Hospitalization',
     eventDate: '2023-11-14',
     title: 'Hospital Admission: Hyperglycemic Decompensation',
@@ -1184,7 +1228,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   },
   {
     id: 'evt-2023-02',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Laboratory',
     eventDate: '2023-11-14',
     title: 'Inpatient Emergency Metabolic Panel',
@@ -1200,7 +1244,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   },
   {
     id: 'evt-2023-03',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Medication',
     eventDate: '2023-11-17',
     title: 'Inpatient Discharge Regimen Intensification',
@@ -1218,7 +1262,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   // 2024
   {
     id: 'evt-2024-01',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Laboratory',
     eventDate: '2024-07-16',
     title: 'Comprehensive Follow-up Panel & Lipid Profile',
@@ -1234,7 +1278,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   },
   {
     id: 'evt-2024-02',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Consultation',
     eventDate: '2024-07-19',
     title: 'Post-Hospitalization Primary Care Follow-up',
@@ -1251,7 +1295,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   // 2025
   {
     id: 'evt-2025-01',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Consultation',
     eventDate: '2025-03-10',
     title: 'Endocrine Specialist Consultation',
@@ -1267,7 +1311,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   },
   {
     id: 'evt-2025-02',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Medication',
     eventDate: '2025-03-10',
     title: 'Empagliflozin (Jardiance) Initiation & Glimepiride Discontinuation',
@@ -1285,7 +1329,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   // 2026
   {
     id: 'evt-2026-01',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Laboratory',
     eventDate: '2026-08-24',
     title: 'Glycemic Target Achievement & Lipid Panel',
@@ -1301,7 +1345,7 @@ export const SEED_MEDICAL_EVENTS: MedicalEvent[] = [
   },
   {
     id: 'evt-2026-02',
-    patientId: 'pat-arun-mathew-01',
+    patientId: 'pat-john-doe-01',
     eventType: 'Consultation',
     eventDate: '2026-08-28',
     title: 'Routine 6-Month Review & Therapy Confirmation',

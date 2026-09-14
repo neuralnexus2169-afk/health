@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   Search,
-  ChevronDown,
   User,
   Menu,
   Check,
@@ -11,13 +10,15 @@ import {
 import { PatientProfile, NavigationRoute } from '../../types';
 import { NotificationsPopover } from '../ui/NotificationsPopover';
 import { SearchDialog } from '../ui/SearchDialog';
+import { ThemeToggle } from '../ui/ThemeToggle';
+import { GlobalSearchInput } from '../search/GlobalSearchInput';
 
 interface TopBarProps {
   currentRoute: NavigationRoute;
   currentPatient: PatientProfile;
   availablePatients: PatientProfile[];
   onSelectPatient: (patient: PatientProfile) => void;
-  onNavigate: (route: NavigationRoute) => void;
+  onNavigate: (route: NavigationRoute, targetId?: string, extraParams?: Record<string, string>) => void;
   onToggleMobileSidebar: () => void;
 }
 
@@ -31,8 +32,10 @@ const ROUTE_LABELS: Record<NavigationRoute, string> = {
   'lab-results': 'Lab Results',
   'ai-assistant': 'AI Assistant',
   documents: 'Documents',
+  contradictions: 'Potential Inconsistencies',
   settings: 'Settings',
   privacy: 'Privacy & Data Governance',
+  search: 'Health Record Search',
 };
 
 export function TopBar({
@@ -89,51 +92,36 @@ export function TopBar({
 
         {/* Right: Search, Notifications, Patient Switcher */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Quick search button */}
-          <button
-            type="button"
-            onClick={() => setIsSearchOpen(true)}
-            className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-zinc-500 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/80 rounded-lg transition-colors cursor-pointer"
-            aria-label="Search records"
-          >
-            <Search className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="hidden md:inline-block text-zinc-500">Quick search...</span>
-            <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium text-zinc-400 bg-white border border-zinc-200 rounded">
-              ⌘K
-            </kbd>
-          </button>
+          {/* Global health search control */}
+          <GlobalSearchInput
+            patient={currentPatient}
+            onNavigate={onNavigate}
+          />
 
           {/* Notifications */}
           <NotificationsPopover />
+
+          {/* Global Theme Toggle */}
+          <ThemeToggle />
 
           <div className="h-5 w-px bg-zinc-200 hidden sm:block" />
 
           {/* Patient Selector Dropdown */}
           <div className="relative" ref={patientDropdownRef}>
             <button
+              id="topbar-patient-menu-btn"
               type="button"
               onClick={() => setIsPatientMenuOpen(!isPatientMenuOpen)}
-              className="flex items-center gap-2.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg text-left hover:bg-zinc-50 border border-transparent hover:border-zinc-200 transition-all cursor-pointer"
-              aria-label="Select Patient"
+              className="flex items-center justify-center p-1 rounded-lg hover:bg-zinc-100 transition-colors cursor-pointer"
+              aria-label={`Select Patient Profile: ${currentPatient.name}`}
+              title={`${currentPatient.name} (${currentPatient.type})`}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-800 font-semibold text-xs border border-zinc-200/80">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-800 font-semibold text-xs border border-zinc-200/80 hover:border-zinc-300">
                 {currentPatient.name
                   .split(' ')
                   .map((n) => n[0])
                   .join('')}
               </div>
-
-              <div className="hidden sm:block text-left">
-                <div className="text-xs font-semibold text-zinc-900 leading-tight">
-                  {currentPatient.name}
-                </div>
-                <div className="text-[11px] text-zinc-500 leading-tight flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-teal-600 inline-block" />
-                  {currentPatient.type}
-                </div>
-              </div>
-
-              <ChevronDown className="w-3.5 h-3.5 text-zinc-400 ml-0.5" />
             </button>
 
             {isPatientMenuOpen && (

@@ -172,7 +172,7 @@ export class HealthHistoryRetriever {
     if (!patient) {
       patient = {
         id: patientId,
-        name: 'Arun Mathew',
+        name: 'John Doe',
         dateOfBirth: '1979-05-14',
         gender: 'Male',
         bloodGroup: 'B+',

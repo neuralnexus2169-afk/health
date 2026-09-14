@@ -1,15 +1,155 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-app: var(--color-app);
+  --color-surface: var(--color-surface);
+  --color-surface-secondary: var(--color-surface-secondary);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-surface-muted: var(--color-surface-muted);
+  --color-border-subtle: var(--color-border-subtle);
+  --color-border-strong: var(--color-border-strong);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  --color-accent-teal: var(--color-accent-teal);
+  --color-accent-teal-subtle: var(--color-accent-teal-subtle);
+}
+
 @layer base {
   :root {
     --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color-scheme: light;
+
+    /* Tailwind CSS Variables - Light Theme */
+    --color-app: #f8fafc;
+    --color-surface: #ffffff;
+    --color-surface-secondary: #f1f5f9;
+    --color-surface-hover: #e2e8f0;
+    --color-surface-muted: #f8fafc;
+    --color-border-subtle: #e2e8f0;
+    --color-border-strong: #cbd5e1;
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #475569;
+    --color-text-muted: #64748b;
+    --color-accent-teal: #0f766e;
+    --color-accent-teal-subtle: #f0fdfa;
+  }
+
+  .dark,
+  [data-theme="dark"] {
+    color-scheme: dark;
+
+    /* Tailwind CSS Variables - Dark Theme (Sophisticated Slate/Charcoal) */
+    --color-app: #0b0f19;
+    --color-surface: #111827;
+    --color-surface-secondary: #1f2937;
+    --color-surface-hover: #263345;
+    --color-surface-muted: #161f30;
+    --color-border-subtle: #1e293b;
+    --color-border-strong: #334155;
+    --color-text-primary: #f8fafc;
+    --color-text-secondary: #cbd5e1;
+    --color-text-muted: #94a3b8;
+    --color-accent-teal: #14b8a6;
+    --color-accent-teal-subtle: #042f2e;
   }
 
   body {
     font-family: var(--font-sans);
-    color: #1e293b;
-    background-color: #f8fafc;
+    color: var(--color-text-primary);
+    background-color: var(--color-app);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   }
 }
+
+/* Dark mode surface & component adaptations using Tailwind CSS variables */
+.dark .bg-white {
+  background-color: var(--color-surface) !important;
+}
+
+.dark .bg-white\/95 {
+  background-color: color-mix(in srgb, var(--color-surface) 95%, transparent) !important;
+}
+
+.dark .bg-zinc-50,
+.dark .bg-zinc-50\/50,
+.dark .bg-zinc-50\/70,
+.dark .bg-zinc-50\/80 {
+  background-color: var(--color-surface-muted) !important;
+}
+
+.dark .bg-zinc-100 {
+  background-color: var(--color-surface-secondary) !important;
+}
+
+.dark .hover\:bg-zinc-50:hover {
+  background-color: var(--color-surface-secondary) !important;
+}
+
+.dark .hover\:bg-zinc-100:hover {
+  background-color: var(--color-surface-hover) !important;
+}
+
+.dark .border-zinc-200,
+.dark .border-zinc-200\/80,
+.dark .border-zinc-200\/70,
+.dark .border-zinc-200\/60,
+.dark .border-zinc-100 {
+  border-color: var(--color-border-subtle) !important;
+}
+
+.dark .border-zinc-300 {
+  border-color: var(--color-border-strong) !important;
+}
+
+.dark .divide-zinc-100 > * + *,
+.dark .divide-zinc-200 > * + * {
+  border-color: var(--color-border-subtle) !important;
+}
+
+.dark .text-zinc-900,
+.dark .text-zinc-800 {
+  color: var(--color-text-primary) !important;
+}
+
+.dark .text-zinc-700,
+.dark .text-zinc-600 {
+  color: var(--color-text-secondary) !important;
+}
+
+.dark .text-zinc-500 {
+  color: var(--color-text-muted) !important;
+}
+
+.dark .text-zinc-400 {
+  color: #64748b !important;
+}
+
+.dark .text-zinc-300 {
+  color: #475569 !important;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: var(--color-surface-secondary);
+  color: var(--color-text-primary);
+  border-color: var(--color-border-subtle);
+}
+
+.dark .shadow-xs,
+.dark .shadow-sm,
+.dark .shadow-2xs {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5) !important;
+}
+

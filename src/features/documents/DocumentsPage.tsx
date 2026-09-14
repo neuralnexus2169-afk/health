@@ -50,7 +50,7 @@ export function DocumentsPage({
   initialSelectedDocId,
 }: DocumentsPageProps) {
   const patientId = patient?.id || DEFAULT_PATIENT_ID;
-  const patientName = patient?.name || 'Arun Mathew';
+  const patientName = patient?.name || '';
 
   const [isLoading, setIsLoading] = useState(true);
   const [documents, setDocuments] = useState<EnrichedDocument[]>([]);
@@ -354,22 +354,28 @@ export function DocumentsPage({
       />
 
       {/* Extraction Review and Confirmation Modal */}
-      <ExtractionReviewModal
-        isOpen={reviewModalState.isOpen}
-        document={reviewModalState.document}
-        extraction={reviewModalState.extraction}
-        onClose={() =>
-          setReviewModalState({
-            isOpen: false,
-            document: null,
-            extraction: null,
-          })
-        }
-        onConfirmed={async () => {
-          await loadDocuments();
-        }}
-        onNavigateToTimeline={handleNavigateToTimeline}
-      />
+      {reviewModalState.isOpen && reviewModalState.document && reviewModalState.extraction && (
+        <ExtractionReviewModal
+          document={reviewModalState.document}
+          extraction={reviewModalState.extraction}
+          onClose={() =>
+            setReviewModalState({
+              isOpen: false,
+              document: null,
+              extraction: null,
+            })
+          }
+          onExtractionConfirmed={async () => {
+            await loadDocuments();
+            setReviewModalState({
+              isOpen: false,
+              document: null,
+              extraction: null,
+            });
+          }}
+          onNavigateToTimeline={handleNavigateToTimeline}
+        />
+      )}
     </div>
   );
 }

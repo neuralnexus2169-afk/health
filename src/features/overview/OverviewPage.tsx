@@ -14,19 +14,22 @@ import { MedicationCard } from '../../components/dashboard/MedicationCard';
 import { RecentTestsCard } from '../../components/dashboard/RecentTestsCard';
 import { RecentEventsCard } from '../../components/dashboard/RecentEventsCard';
 import { RecentDocumentsCard } from '../../components/dashboard/RecentDocumentsCard';
-import { Button } from '../../components/ui/Button';
-import { Upload, GitCommitHorizontal, FileText } from 'lucide-react';
+import { ContradictionsCard } from '../../components/dashboard/ContradictionsCard';
 
 interface OverviewPageProps {
   patient: PatientProfile;
   onNavigate: (route: NavigationRoute) => void;
   onOpenUpload: () => void;
+  onOpenAddRecord?: () => void;
+  onOpenExportReport?: () => void;
 }
 
 export function OverviewPage({
   patient,
   onNavigate,
   onOpenUpload,
+  onOpenAddRecord,
+  onOpenExportReport,
 }: OverviewPageProps) {
   const [overviewData, setOverviewData] = useState<{
     profile: PatientProfile;
@@ -80,34 +83,6 @@ export function OverviewPage({
       <PageHeader
         title="Health Overview"
         subtitle="A clear view of your medical history."
-        actions={
-          <div className="flex items-center gap-2.5">
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<GitCommitHorizontal className="w-3.5 h-3.5 text-teal-700" />}
-              onClick={() => onNavigate('timeline')}
-            >
-              Timeline
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<FileText className="w-3.5 h-3.5 text-sky-700" />}
-              onClick={() => onNavigate('documents')}
-            >
-              Documents
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              icon={<Upload className="w-3.5 h-3.5" />}
-              onClick={onOpenUpload}
-            >
-              Upload record
-            </Button>
-          </div>
-        }
       />
 
       {/* Patient Profile Section */}
@@ -116,8 +91,16 @@ export function OverviewPage({
       {/* AI Health Summary Card */}
       <AISummaryCard onOpenAssistant={onNavigate} />
 
+      {/* Potential Inconsistencies / Contradictions Alert Card */}
+      <ContradictionsCard patientId={patient.id} onNavigate={onNavigate} />
+
       {/* Quick Actions */}
-      <QuickActions onNavigate={onNavigate} onUploadClick={onOpenUpload} />
+      <QuickActions
+        onNavigate={onNavigate}
+        onUploadClick={onOpenUpload}
+        onAddRecordClick={onOpenAddRecord}
+        onExportReportClick={onOpenExportReport}
+      />
 
       {/* 4 Dashboard Cards in Responsive 2x2 Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

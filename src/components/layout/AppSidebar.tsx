@@ -12,6 +12,8 @@ import {
   ShieldCheck,
   X,
   HeartPulse,
+  AlertTriangle,
+  Search,
 } from 'lucide-react';
 import { NavigationRoute } from '../../types';
 import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS } from '../../lib/demo-data';
@@ -34,6 +36,8 @@ const ICON_MAP: Record<string, React.ElementType> = {
   FolderArchive,
   Settings,
   ShieldCheck,
+  AlertTriangle,
+  Search,
 };
 
 export function AppSidebar({
@@ -183,6 +187,21 @@ export function AppSidebar({
             Step 1 · Frontend shell & verified architecture
           </p>
         </div>
+
+        {/* Developer Tool: Reset Database */}
+        <button
+          type="button"
+          onClick={() => {
+            if (window.confirm('Are you sure you want to completely reset the application state? This will delete all your records and patient data.')) {
+              fetch('/api/testing/reset', { method: 'POST' })
+                .then(() => window.location.reload())
+                .catch((err) => console.error(err));
+            }
+          }}
+          className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md border border-rose-200 bg-rose-50 text-[10px] font-semibold text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer"
+        >
+          Reset Environment
+        </button>
       </div>
     </div>
   );

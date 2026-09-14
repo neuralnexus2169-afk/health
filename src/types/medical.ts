@@ -4,7 +4,7 @@
  * and future AI contradiction detection & clinical QA.
  */
 
-export type Gender = 'Male' | 'Female' | 'Other';
+export type Gender = 'Male' | 'Female' | 'Other' | 'Allergy';
 
 export type DocumentType =
   | 'Prescription'
@@ -14,7 +14,8 @@ export type DocumentType =
   | 'Imaging Report'
   | 'Medical Bill'
   | 'Vaccination Record'
-  | 'Other';
+  | 'Other'
+  | 'Allergy';
 
 export type DocumentStatus =
   | 'Uploaded'
@@ -33,14 +34,54 @@ export type ExtractionStatus =
 
 export type ConfidenceLevel = 'High' | 'Medium' | 'Low';
 
+export type ReviewState = 'High Confidence' | 'Review Recommended' | 'Ambiguous' | 'Unrecognized';
+
+export interface ExtractedPatientInfo {
+  id?: string;
+  name?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  mrn?: string;
+  confidence?: ConfidenceLevel;
+  reviewState?: ReviewState;
+  confidenceReason?: string;
+  sourceText?: string;
+  sourceQuote?: string;
+  sourceLocation?: string;
+  pageNumber?: number;
+  accepted?: boolean;
+}
+
+export interface ExtractedMedicalEventItem {
+  id: string;
+  title: string;
+  eventType: MedicalEventType;
+  date?: string;
+  facility?: string;
+  provider?: string;
+  summary?: string;
+  confidence?: ConfidenceLevel;
+  reviewState?: ReviewState;
+  confidenceReason?: string;
+  sourceText?: string;
+  sourceQuote?: string;
+  sourceLocation?: string;
+  pageNumber?: number;
+  accepted?: boolean;
+}
+
 export interface ExtractedDiagnosis {
   id: string;
   name: string;
   status: DiagnosisStatus;
   date?: string;
   confidence?: ConfidenceLevel;
+  reviewState?: ReviewState;
+  confidenceReason?: string;
   sourceQuote?: string;
+  sourceText?: string;
   pageNumber?: number;
+  sourceLocation?: string;
   accepted?: boolean;
 }
 
@@ -55,8 +96,12 @@ export interface ExtractedMedication {
   endDate?: string;
   status: MedicationStatus;
   confidence?: ConfidenceLevel;
+  reviewState?: ReviewState;
+  confidenceReason?: string;
   sourceQuote?: string;
+  sourceText?: string;
   pageNumber?: number;
+  sourceLocation?: string;
   accepted?: boolean;
 }
 
@@ -70,8 +115,12 @@ export interface ExtractedLabResult {
   date?: string;
   interpretation?: 'Normal' | 'Elevated' | 'Low' | 'Target' | 'Critical';
   confidence?: ConfidenceLevel;
+  reviewState?: ReviewState;
+  confidenceReason?: string;
   sourceQuote?: string;
+  sourceText?: string;
   pageNumber?: number;
+  sourceLocation?: string;
   accepted?: boolean;
 }
 
@@ -81,8 +130,12 @@ export interface ExtractedProcedure {
   date?: string;
   provider?: string;
   confidence?: ConfidenceLevel;
+  reviewState?: ReviewState;
+  confidenceReason?: string;
   sourceQuote?: string;
+  sourceText?: string;
   pageNumber?: number;
+  sourceLocation?: string;
   accepted?: boolean;
 }
 
@@ -92,8 +145,24 @@ export interface ExtractedAllergy {
   reaction?: string;
   severity?: 'Mild' | 'Moderate' | 'Severe' | 'Unknown';
   confidence?: ConfidenceLevel;
+  reviewState?: ReviewState;
+  confidenceReason?: string;
   sourceQuote?: string;
+  sourceText?: string;
   pageNumber?: number;
+  sourceLocation?: string;
+  accepted?: boolean;
+}
+
+export interface ExtractedNeedsReviewItem {
+  id: string;
+  suggestedCategory: 'Diagnosis' | 'Medication' | 'Lab Result' | 'Procedure' | 'Allergy' | 'Patient Info' | 'Medical Event' | 'Other' | 'Unrecognized';
+  rawText: string;
+  confidenceReason: string;
+  sourceLocation?: string;
+  sourceText?: string;
+  reviewState: ReviewState;
+  fieldValues?: Record<string, any>;
   accepted?: boolean;
 }
 
@@ -101,12 +170,17 @@ export interface StructuredExtractionData {
   documentDate?: string;
   documentType?: DocumentType;
   facility?: string;
+  facilityType?: string;
   provider?: string;
+  providerSpecialty?: string;
+  patientInfo?: ExtractedPatientInfo;
   diagnoses: ExtractedDiagnosis[];
   medications: ExtractedMedication[];
   labResults: ExtractedLabResult[];
   procedures: ExtractedProcedure[];
   allergies: ExtractedAllergy[];
+  medicalEvents?: ExtractedMedicalEventItem[];
+  needsReviewItems?: ExtractedNeedsReviewItem[];
   clinicalNotes: string[];
   summarySnippet?: string;
 }
@@ -134,7 +208,8 @@ export type MedicalEventType =
   | 'Procedure'
   | 'Hospitalization'
   | 'Vaccination'
-  | 'Other';
+  | 'Other'
+  | 'Allergy';
 
 export type DiagnosisStatus =
   | 'Active'
@@ -153,7 +228,8 @@ export type InsightType =
   | 'Potential Inconsistency'
   | 'Missing Information'
   | 'Summary'
-  | 'Other';
+  | 'Other'
+  | 'Allergy';
 
 export interface Patient {
   id: string;
@@ -223,6 +299,7 @@ export interface MedicalEvent {
   documentId?: string;
   documentFileName?: string;
   sourceReferenceId?: string;
+  isManualEntry?: boolean;
   createdAt: string;
 }
 
@@ -239,6 +316,7 @@ export interface Diagnosis {
   clinicalNotes?: string;
   category?: string;
   sourceReferenceId?: string;
+  isManualEntry?: boolean;
 }
 
 export interface Medication {
@@ -259,6 +337,7 @@ export interface Medication {
   indication?: string;
   refillNote?: string;
   sourceReferenceId?: string;
+  isManualEntry?: boolean;
 }
 
 export interface LabResult {
@@ -277,6 +356,7 @@ export interface LabResult {
   eventId?: string;
   interpretation?: 'Normal' | 'Elevated' | 'Low' | 'Target' | 'Critical';
   sourceReferenceId?: string;
+  isManualEntry?: boolean;
 }
 
 export interface AIInsight {
@@ -289,18 +369,56 @@ export interface AIInsight {
   createdAt: string;
 }
 
+export type ContradictionCategory = 'Allergy' | 'Medication' | 'Diagnosis' | 'Timeline';
+export type ContradictionSeverity = 'High' | 'Moderate' | 'Advisory';
+export type ContradictionReviewStatus = 'Unreviewed' | 'Reviewed';
+
+export interface ContradictionEvidenceItem {
+  documentId: string;
+  documentFileName: string;
+  documentDate: string;
+  facilityName?: string;
+  providerName?: string;
+  pageNumber?: number;
+  quote: string;
+  fact: string;
+  sourceReferenceId?: string;
+  eventId?: string;
+}
+
 export interface MedicalContradiction {
   id: string;
   patientId: string;
-  category: 'Allergy' | 'Medication' | 'Diagnosis' | 'Timeline';
+  category: ContradictionCategory;
   title: string;
   description: string;
+  clinicalExplanation?: string;
+  severity: ContradictionSeverity;
+  status: 'Unresolved' | 'Acknowledged' | 'Dismissed' | 'Unreviewed' | 'Reviewed';
+  reviewStatus?: ContradictionReviewStatus;
+  reviewNotes?: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  firstFact?: string;
+  secondFact?: string;
+  firstDate?: string;
+  secondDate?: string;
+  firstProvider?: string;
+  secondProvider?: string;
+  firstFacility?: string;
+  secondFacility?: string;
+  firstSourceReference?: string;
+  secondSourceReference?: string;
+  firstDocument?: ContradictionEvidenceItem;
+  secondDocument?: ContradictionEvidenceItem;
   sourceA: {
     documentId: string;
     documentFileName: string;
     documentDate: string;
     pageNumber?: number;
     quote: string;
+    facilityName?: string;
+    providerName?: string;
   };
   sourceB: {
     documentId: string;
@@ -308,9 +426,9 @@ export interface MedicalContradiction {
     documentDate: string;
     pageNumber?: number;
     quote: string;
+    facilityName?: string;
+    providerName?: string;
   };
-  severity: 'High' | 'Moderate' | 'Advisory';
-  status: 'Unresolved' | 'Acknowledged' | 'Dismissed';
 }
 
 /**

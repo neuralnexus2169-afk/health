@@ -2,6 +2,7 @@ export type NavigationRoute =
   | 'overview'
   | 'timeline'
   | 'health-summary'
+  | 'contradictions'
   | 'medical-records'
   | 'medications'
   | 'diagnoses'
@@ -9,7 +10,8 @@ export type NavigationRoute =
   | 'ai-assistant'
   | 'documents'
   | 'settings'
-  | 'privacy';
+  | 'privacy'
+  | 'search';
 
 export interface NavigationItem {
   id: NavigationRoute;

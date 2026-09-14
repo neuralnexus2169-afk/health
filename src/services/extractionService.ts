@@ -194,14 +194,14 @@ export async function confirmExtraction(
   const createdEvents: MedicalEvent[] = [];
 
   // Helper to create source reference
-  async function createSourceRef(quote?: string, pageNum?: number): Promise<SourceReference | null> {
-    if (!quote && !pageNum) return null;
+  async function createSourceRef(quote?: string, pageNum?: number, location?: string): Promise<SourceReference | null> {
+    if (!quote && !pageNum && !location) return null;
     const ref = await sourceReferenceRepository.create({
       id: `src-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
       documentId: doc.id,
       documentFileName: doc.fileName,
       pageNumber: pageNum || 1,
-      sourceText: quote || undefined,
+      sourceText: quote || (location ? `[${location}]` : undefined),
     });
     createdSourceReferences.push(ref);
     return ref;
@@ -209,7 +209,12 @@ export async function confirmExtraction(
 
   // 1. Process Accepted Diagnoses
   for (const diag of reviewed.diagnoses.filter((d) => d.accepted !== false)) {
-    const srcRef = await createSourceRef(diag.sourceQuote, diag.pageNumber);
+    const srcRef = await createSourceRef(diag.sourceQuote || diag.sourceText, diag.pageNumber, diag.sourceLocation);
+    const notes = [
+      diag.confidenceReason ? `Verification: ${diag.confidenceReason}` : null,
+      diag.sourceLocation ? `Source: ${diag.sourceLocation}` : null,
+    ].filter(Boolean).join(' | ') || `AI-extracted from ${doc.fileName} and confirmed by user.`;
+
     const createdDiag = await diagnosisRepository.create({
       id: `diag-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       patientId,
@@ -219,7 +224,7 @@ export async function confirmExtraction(
       lastDocumentedDate: diag.date || eventDate,
       documentId: doc.id,
       documentFileName: doc.fileName,
-      clinicalNotes: `AI-extracted from ${doc.fileName} and confirmed by user.`,
+      clinicalNotes: notes,
       category: 'Clinical Diagnosis',
       sourceReferenceId: srcRef?.id,
     });
@@ -228,7 +233,13 @@ export async function confirmExtraction(
 
   // 2. Process Accepted Medications
   for (const med of reviewed.medications.filter((m) => m.accepted !== false)) {
-    const srcRef = await createSourceRef(med.sourceQuote, med.pageNumber);
+    const srcRef = await createSourceRef(med.sourceQuote || med.sourceText, med.pageNumber, med.sourceLocation);
+    const refillNotes = [
+      med.confidenceReason ? `Evidence: ${med.confidenceReason}` : null,
+      med.sourceLocation ? `Location: ${med.sourceLocation}` : null,
+      'User confirmed from clinical extraction',
+    ].filter(Boolean).join(' · ');
+
     const createdMed = await medicationRepository.create({
       id: `med-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       patientId,
@@ -244,7 +255,7 @@ export async function confirmExtraction(
       documentFileName: doc.fileName,
       prescribedBy: reviewed.provider || doc.providerName || 'Attending Physician',
       indication: reviewed.diagnoses[0]?.name || undefined,
-      refillNote: 'User confirmed from clinical extraction',
+      refillNote: refillNotes,
       sourceReferenceId: srcRef?.id,
     });
     createdMedications.push(createdMed);
@@ -252,7 +263,7 @@ export async function confirmExtraction(
 
   // 3. Process Accepted Lab Results
   for (const lab of reviewed.labResults.filter((l) => l.accepted !== false)) {
-    const srcRef = await createSourceRef(lab.sourceQuote, lab.pageNumber);
+    const srcRef = await createSourceRef(lab.sourceQuote || lab.sourceText, lab.pageNumber, lab.sourceLocation);
     const numVal = typeof lab.value === 'number' ? lab.value : parseFloat(String(lab.value)) || 0;
     const createdLab = await labResultRepository.create({
       id: `lab-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -288,6 +299,25 @@ export async function confirmExtraction(
           allergies: [...existingAllergies, ...newAllergies],
         });
       }
+    }
+  }
+
+  // 4.5. Process Medical Encounter Events
+  if (reviewed.medicalEvents && reviewed.medicalEvents.length > 0) {
+    for (const evt of reviewed.medicalEvents.filter((e) => e.accepted !== false)) {
+      const customEvent = await timelineRepository.create({
+        id: `evt-extract-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        patientId,
+        eventType: (evt.eventType as any) || 'Consultation',
+        eventDate: evt.date || eventDate,
+        title: evt.title,
+        description: evt.summary || `Extracted clinical event from ${doc.fileName}`,
+        facilityName: evt.facility || reviewed.facility || doc.facilityName,
+        providerName: evt.provider || reviewed.provider || doc.providerName,
+        documentId: doc.id,
+        documentFileName: doc.fileName,
+      });
+      createdEvents.push(customEvent);
     }
   }
 

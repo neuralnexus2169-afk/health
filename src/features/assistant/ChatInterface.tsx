@@ -19,20 +19,28 @@ import { NavigationRoute } from '../../types';
 interface ChatInterfaceProps {
   patientId: string;
   patientName?: string;
+  initialQuestion?: string;
   onNavigate?: (route: NavigationRoute) => void;
   onNavigateToDocument?: (docId: string) => void;
 }
 
 export function ChatInterface({
   patientId,
-  patientName = 'Arun Mathew',
+  patientName = '',
+  initialQuestion,
   onNavigate,
   onNavigateToDocument,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<HealthAssistantMessage[]>([]);
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState(initialQuestion || '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialQuestion) {
+      setInputText(initialQuestion);
+    }
+  }, [initialQuestion]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -109,10 +117,10 @@ export function ChatInterface({
   };
 
   const quickPills = [
-    'When was diabetes first documented?',
-    'What medications has this patient taken?',
-    'Show me the HbA1c results over time.',
-    'Which hospitals has this patient visited?',
+    'When was my earliest diagnosis?',
+    'What medications am I taking?',
+    'Show me my recent lab results.',
+    'Which hospitals have I visited?',
     'Are there conflicting allergy records?',
   ];
 

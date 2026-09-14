@@ -45,6 +45,7 @@ enum MedicalEventType {
   HOSPITALIZATION
   VACCINATION
   OTHER
+  ALLERGY
 }
 
 enum DiagnosisStatus {
@@ -155,6 +156,7 @@ model MedicalEvent {
   provider    HealthcareProvider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
   documentId  String?
   document    Document?        @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  isManualEntry Boolean        @default(false)
   createdAt   DateTime         @default(now())
 
   diagnoses   Diagnosis[]
@@ -176,6 +178,7 @@ model Diagnosis {
   event               MedicalEvent?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
   documentId          String?
   document            Document?       @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  isManualEntry       Boolean         @default(false)
 
   @@map("diagnoses")
 }
@@ -196,6 +199,7 @@ model Medication {
   event       MedicalEvent?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
   documentId  String?
   document    Document?        @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  isManualEntry Boolean        @default(false)
 
   @@map("medications")
 }
@@ -216,6 +220,7 @@ model LabResult {
   document       Document?     @relation(fields: [documentId], references: [id], onDelete: SetNull)
   eventId        String?
   event          MedicalEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  isManualEntry  Boolean       @default(false)
 
   @@map("lab_results")
 }

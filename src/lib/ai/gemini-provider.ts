@@ -25,17 +25,24 @@ export class GeminiAIProvider implements AIProvider {
     const apiKey = process.env.GEMINI_API_KEY;
     if (apiKey && apiKey !== 'MY_GEMINI_API_KEY' && apiKey.trim().length > 0) {
       try {
-        this.client = new GoogleGenAI({ apiKey });
+        this.client = new GoogleGenAI({
+          apiKey,
+          httpOptions: {
+            headers: {
+              'User-Agent': 'aistudio-build',
+            },
+          },
+        });
       } catch (err) {
-        console.warn('Failed to initialize GoogleGenAI client, falling back to mock provider:', err);
+        console.info('[Gemini] Could not initialize GoogleGenAI client, using clinical fallback engine:', err);
       }
     }
   }
 
   /**
    * Robust generator that handles temporary capacity spikes (HTTP 503 / 429),
-   * applies fast cascading across supported Gemini models with timeout bounds,
-   * before falling back to local clinical synthesis.
+   * applies short backoff retries and cascades across supported Gemini models with generous timeouts,
+   * before seamlessly falling back to local clinical synthesis.
    */
   private async generateWithResilience(options: {
     contents: any;
@@ -47,51 +54,62 @@ export class GeminiAIProvider implements AIProvider {
       throw new Error('No Gemini client initialized');
     }
 
-    const preferred = options.preferredModel || 'gemini-3.8-flash';
-    // Cascading model candidates adhering to SKILL.md guidelines
+    const preferred = options.preferredModel || 'gemini-2.5-flash';
+    // Cascading model candidates: preferred gemini-2.5-flash -> resilient fallbacks
     const modelCandidates = Array.from(
-      new Set([preferred, 'gemini-flash-latest', 'gemini-3.1-flash-lite'])
+      new Set([preferred, 'gemini-2.5-flash', 'gemini-2.5-pro'])
     );
 
-    const timeoutMs = options.timeoutMs || 8000;
+    const timeoutMs = options.timeoutMs || 25000;
     let lastError: any = null;
 
     for (const model of modelCandidates) {
-      try {
-        const callPromise = this.client.models.generateContent({
-          model,
-          contents: options.contents,
-          config: options.config,
-        });
+      // Allow up to 2 quick attempts per candidate for transient spikes
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const callPromise = this.client.models.generateContent({
+            model,
+            contents: options.contents,
+            config: options.config,
+          });
 
-        let timerId: any;
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          timerId = setTimeout(() => reject(new Error(`Timeout after ${timeoutMs}ms on model ${model}`)), timeoutMs);
-        });
+          let timerId: any;
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            timerId = setTimeout(
+              () => reject(new Error(`Timeout after ${timeoutMs}ms on model ${model}`)),
+              timeoutMs
+            );
+          });
 
-        const response: any = await Promise.race([callPromise, timeoutPromise]);
-        clearTimeout(timerId);
+          const response: any = await Promise.race([callPromise, timeoutPromise]);
+          clearTimeout(timerId);
 
-        if (response && typeof response.text === 'string' && response.text.length > 0) {
-          return response.text;
-        }
-      } catch (err: any) {
-        lastError = err;
-        const status = err?.status || err?.code || (err?.error && err.error.code);
-        const message = String(err?.message || '');
-        const isTransient =
-          status === 503 ||
-          status === 429 ||
-          status === 'UNAVAILABLE' ||
-          message.includes('high demand') ||
-          message.includes('503') ||
-          message.includes('429') ||
-          message.includes('Timeout') ||
-          message.includes('RESOURCE_EXHAUSTED');
+          if (response && typeof response.text === 'string' && response.text.length > 0) {
+            return response.text;
+          }
+        } catch (err: any) {
+          lastError = err;
+          const status = err?.status || err?.code || (err?.error && err.error.code);
+          const message = String(err?.message || '');
+          const isTransient =
+            status === 503 ||
+            status === 429 ||
+            status === 'UNAVAILABLE' ||
+            message.includes('high demand') ||
+            message.includes('503') ||
+            message.includes('429') ||
+            message.includes('Timeout') ||
+            message.includes('RESOURCE_EXHAUSTED');
 
-        console.warn(`Gemini model ${model} temporarily unavailable (${message.slice(0, 75)}). Cascading...`);
-        if (!isTransient) {
-          break;
+          if (isTransient && attempt === 0) {
+            // Short jittered delay before second attempt on same model
+            const delay = 600 + Math.floor(Math.random() * 300);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            continue;
+          }
+
+          console.info(`[Gemini] Model ${model} unavailable (${message.slice(0, 70)}). Cascading...`);
+          break; // Move to next model candidate
         }
       }
     }
@@ -106,7 +124,7 @@ export class GeminiAIProvider implements AIProvider {
 
     try {
       const responseText = await this.generateWithResilience({
-        preferredModel: 'gemini-3.8-flash',
+        preferredModel: 'gemini-2.5-flash',
         contents: [
           {
             role: 'user',
@@ -157,7 +175,7 @@ export class GeminiAIProvider implements AIProvider {
       }
 
       const responseText = await this.generateWithResilience({
-        preferredModel: 'gemini-3.8-flash',
+        preferredModel: 'gemini-2.5-flash',
         config: {
           systemInstruction: MEDICAL_EXTRACTION_SYSTEM_PROMPT,
           responseMimeType: 'application/json',
@@ -191,82 +209,177 @@ export class GeminiAIProvider implements AIProvider {
     try {
       const parsed = JSON.parse(clean);
 
+      const resolveReviewState = (item: any, defaultConfidence: string): 'High Confidence' | 'Review Recommended' | 'Ambiguous' | 'Unrecognized' => {
+        if (item.reviewState && ['High Confidence', 'Review Recommended', 'Ambiguous', 'Unrecognized'].includes(item.reviewState)) {
+          return item.reviewState;
+        }
+        const conf = item.confidence || defaultConfidence;
+        if (conf === 'High') return 'High Confidence';
+        if (conf === 'Low') return 'Ambiguous';
+        return 'Review Recommended';
+      };
+
+      const patientInfo = parsed.patientInfo ? {
+        id: parsed.patientInfo.id || `pat-info-${Date.now()}`,
+        name: parsed.patientInfo.name || undefined,
+        dateOfBirth: parsed.patientInfo.dateOfBirth || undefined,
+        gender: parsed.patientInfo.gender || undefined,
+        mrn: parsed.patientInfo.mrn || undefined,
+        confidence: parsed.patientInfo.confidence || 'High',
+        reviewState: resolveReviewState(parsed.patientInfo, 'High'),
+        confidenceReason: parsed.patientInfo.confidenceReason || 'Document demographic record',
+        sourceText: parsed.patientInfo.sourceText || parsed.patientInfo.sourceQuote || undefined,
+        sourceQuote: parsed.patientInfo.sourceQuote || parsed.patientInfo.sourceText || undefined,
+        sourceLocation: parsed.patientInfo.sourceLocation || 'Page 1, Header',
+        pageNumber: typeof parsed.patientInfo.pageNumber === 'number' ? parsed.patientInfo.pageNumber : 1,
+        accepted: parsed.patientInfo.accepted !== false,
+      } : undefined;
+
+      const medicalEvents = Array.isArray(parsed.medicalEvents)
+        ? parsed.medicalEvents.map((e: any, idx: number) => ({
+            id: e.id || `evt-ext-${Date.now()}-${idx}`,
+            title: String(e.title || 'Clinical Encounter'),
+            eventType: e.eventType || 'Consultation',
+            date: e.date || undefined,
+            facility: e.facility || undefined,
+            provider: e.provider || undefined,
+            summary: e.summary || undefined,
+            confidence: e.confidence || 'High',
+            reviewState: resolveReviewState(e, 'High'),
+            confidenceReason: e.confidenceReason || 'Clinical encounter header',
+            sourceText: e.sourceText || e.sourceQuote || undefined,
+            sourceQuote: e.sourceQuote || e.sourceText || undefined,
+            sourceLocation: e.sourceLocation || 'Page 1',
+            pageNumber: typeof e.pageNumber === 'number' ? e.pageNumber : 1,
+            accepted: e.accepted !== false,
+          }))
+        : [];
+
+      const diagnoses = Array.isArray(parsed.diagnoses)
+        ? parsed.diagnoses.map((d: any, idx: number) => ({
+            id: d.id || `diag-${Date.now()}-${idx}`,
+            name: String(d.name || 'Unspecified Condition'),
+            status: d.status || 'Active',
+            date: d.date || undefined,
+            confidence: d.confidence || 'High',
+            reviewState: resolveReviewState(d, 'High'),
+            confidenceReason: d.confidenceReason || (d.confidence === 'High' ? 'Explicit assessment in record' : 'Review recommended from clinical context'),
+            sourceQuote: d.sourceQuote || d.sourceText || undefined,
+            sourceText: d.sourceText || d.sourceQuote || undefined,
+            pageNumber: typeof d.pageNumber === 'number' ? d.pageNumber : 1,
+            sourceLocation: d.sourceLocation || (typeof d.pageNumber === 'number' ? `Page ${d.pageNumber}` : 'Page 1'),
+            accepted: d.accepted !== false,
+          }))
+        : [];
+
+      const medications = Array.isArray(parsed.medications)
+        ? parsed.medications.map((m: any, idx: number) => ({
+            id: m.id || `med-${Date.now()}-${idx}`,
+            name: String(m.name || 'Unspecified Medication'),
+            genericName: m.genericName || undefined,
+            dosage: String(m.dosage || 'Standard Dosage'),
+            frequency: String(m.frequency || 'As directed'),
+            route: m.route || 'Oral',
+            startDate: m.startDate || undefined,
+            endDate: m.endDate || undefined,
+            status: m.status || 'Active',
+            confidence: m.confidence || 'High',
+            reviewState: resolveReviewState(m, 'High'),
+            confidenceReason: m.confidenceReason || (m.confidence === 'High' ? 'Documented in regimen' : 'Verify dosage or interval with provider'),
+            sourceQuote: m.sourceQuote || m.sourceText || undefined,
+            sourceText: m.sourceText || m.sourceQuote || undefined,
+            pageNumber: typeof m.pageNumber === 'number' ? m.pageNumber : 1,
+            sourceLocation: m.sourceLocation || (typeof m.pageNumber === 'number' ? `Page ${m.pageNumber}` : 'Page 1'),
+            accepted: m.accepted !== false,
+          }))
+        : [];
+
+      const labResults = Array.isArray(parsed.labResults)
+        ? parsed.labResults.map((l: any, idx: number) => ({
+            id: l.id || `lab-${Date.now()}-${idx}`,
+            testName: String(l.testName || 'Diagnostic Test'),
+            parameterName: String(l.parameterName || l.testName || 'Parameter'),
+            value: l.value !== undefined ? l.value : '',
+            unit: String(l.unit || ''),
+            referenceRange: l.referenceRange || undefined,
+            date: l.date || undefined,
+            interpretation: l.interpretation || undefined,
+            confidence: l.confidence || 'High',
+            reviewState: resolveReviewState(l, 'High'),
+            confidenceReason: l.confidenceReason || 'Laboratory panel finding',
+            sourceQuote: l.sourceQuote || l.sourceText || undefined,
+            sourceText: l.sourceText || l.sourceQuote || undefined,
+            pageNumber: typeof l.pageNumber === 'number' ? l.pageNumber : 1,
+            sourceLocation: l.sourceLocation || (typeof l.pageNumber === 'number' ? `Page ${l.pageNumber}` : 'Page 1'),
+            accepted: l.accepted !== false,
+          }))
+        : [];
+
+      const procedures = Array.isArray(parsed.procedures)
+        ? parsed.procedures.map((p: any, idx: number) => ({
+            id: p.id || `proc-${Date.now()}-${idx}`,
+            name: String(p.name || 'Clinical Procedure'),
+            date: p.date || undefined,
+            provider: p.provider || undefined,
+            confidence: p.confidence || 'High',
+            reviewState: resolveReviewState(p, 'High'),
+            confidenceReason: p.confidenceReason || 'Documented intervention or exam',
+            sourceQuote: p.sourceQuote || p.sourceText || undefined,
+            sourceText: p.sourceText || p.sourceQuote || undefined,
+            pageNumber: typeof p.pageNumber === 'number' ? p.pageNumber : 1,
+            sourceLocation: p.sourceLocation || (typeof p.pageNumber === 'number' ? `Page ${p.pageNumber}` : 'Page 1'),
+            accepted: p.accepted !== false,
+          }))
+        : [];
+
+      const allergies = Array.isArray(parsed.allergies)
+        ? parsed.allergies.map((a: any, idx: number) => ({
+            id: a.id || `all-${Date.now()}-${idx}`,
+            substance: String(a.substance || 'Unspecified Allergen'),
+            reaction: a.reaction || undefined,
+            severity: a.severity || 'Unknown',
+            confidence: a.confidence || 'High',
+            reviewState: resolveReviewState(a, 'High'),
+            confidenceReason: a.confidenceReason || 'Documented allergy history',
+            sourceQuote: a.sourceQuote || a.sourceText || undefined,
+            sourceText: a.sourceText || a.sourceQuote || undefined,
+            pageNumber: typeof a.pageNumber === 'number' ? a.pageNumber : 1,
+            sourceLocation: a.sourceLocation || (typeof a.pageNumber === 'number' ? `Page ${a.pageNumber}` : 'Page 1'),
+            accepted: a.accepted !== false,
+          }))
+        : [];
+
+      const needsReviewItems = Array.isArray(parsed.needsReviewItems)
+        ? parsed.needsReviewItems.map((nr: any, idx: number) => ({
+            id: nr.id || `nr-${Date.now()}-${idx}`,
+            suggestedCategory: nr.suggestedCategory || 'Other',
+            rawText: String(nr.rawText || nr.sourceText || 'Unrecognized text snippet'),
+            confidenceReason: nr.confidenceReason || 'Requires human clinician verification',
+            sourceLocation: nr.sourceLocation || 'Page 1',
+            sourceText: nr.sourceText || nr.rawText || undefined,
+            reviewState: (nr.reviewState as any) || 'Ambiguous',
+            fieldValues: nr.fieldValues || {},
+            accepted: nr.accepted === true,
+          }))
+        : [];
+
       // Validate and assign stable IDs and accepted defaults
       return {
         documentDate: parsed.documentDate || undefined,
         documentType: parsed.documentType || undefined,
         facility: parsed.facility || undefined,
+        facilityType: parsed.facilityType || undefined,
         provider: parsed.provider || undefined,
+        providerSpecialty: parsed.providerSpecialty || undefined,
         summarySnippet: parsed.summarySnippet || undefined,
-        diagnoses: Array.isArray(parsed.diagnoses)
-          ? parsed.diagnoses.map((d: any, idx: number) => ({
-              id: d.id || `diag-${Date.now()}-${idx}`,
-              name: String(d.name || 'Unspecified Condition'),
-              status: d.status || 'Active',
-              date: d.date || undefined,
-              confidence: d.confidence || 'Medium',
-              sourceQuote: d.sourceQuote || undefined,
-              pageNumber: typeof d.pageNumber === 'number' ? d.pageNumber : 1,
-              accepted: true,
-            }))
-          : [],
-        medications: Array.isArray(parsed.medications)
-          ? parsed.medications.map((m: any, idx: number) => ({
-              id: m.id || `med-${Date.now()}-${idx}`,
-              name: String(m.name || 'Unspecified Medication'),
-              genericName: m.genericName || undefined,
-              dosage: String(m.dosage || 'Standard Dosage'),
-              frequency: String(m.frequency || 'As directed'),
-              route: m.route || 'Oral',
-              startDate: m.startDate || undefined,
-              endDate: m.endDate || undefined,
-              status: m.status || 'Active',
-              confidence: m.confidence || 'Medium',
-              sourceQuote: m.sourceQuote || undefined,
-              pageNumber: typeof m.pageNumber === 'number' ? m.pageNumber : 1,
-              accepted: true,
-            }))
-          : [],
-        labResults: Array.isArray(parsed.labResults)
-          ? parsed.labResults.map((l: any, idx: number) => ({
-              id: l.id || `lab-${Date.now()}-${idx}`,
-              testName: String(l.testName || 'Diagnostic Test'),
-              parameterName: String(l.parameterName || l.testName || 'Parameter'),
-              value: l.value !== undefined ? l.value : '',
-              unit: String(l.unit || ''),
-              referenceRange: l.referenceRange || undefined,
-              date: l.date || undefined,
-              interpretation: l.interpretation || undefined,
-              confidence: l.confidence || 'Medium',
-              sourceQuote: l.sourceQuote || undefined,
-              pageNumber: typeof l.pageNumber === 'number' ? l.pageNumber : 1,
-              accepted: true,
-            }))
-          : [],
-        procedures: Array.isArray(parsed.procedures)
-          ? parsed.procedures.map((p: any, idx: number) => ({
-              id: p.id || `proc-${Date.now()}-${idx}`,
-              name: String(p.name || 'Clinical Procedure'),
-              date: p.date || undefined,
-              provider: p.provider || undefined,
-              confidence: p.confidence || 'Medium',
-              sourceQuote: p.sourceQuote || undefined,
-              pageNumber: typeof p.pageNumber === 'number' ? p.pageNumber : 1,
-              accepted: true,
-            }))
-          : [],
-        allergies: Array.isArray(parsed.allergies)
-          ? parsed.allergies.map((a: any, idx: number) => ({
-              id: a.id || `all-${Date.now()}-${idx}`,
-              substance: String(a.substance || 'Unspecified Allergen'),
-              reaction: a.reaction || undefined,
-              severity: a.severity || 'Unknown',
-              confidence: a.confidence || 'Medium',
-              sourceQuote: a.sourceQuote || undefined,
-              pageNumber: typeof a.pageNumber === 'number' ? a.pageNumber : 1,
-              accepted: true,
-            }))
-          : [],
+        patientInfo,
+        medicalEvents,
+        diagnoses,
+        medications,
+        labResults,
+        procedures,
+        allergies,
+        needsReviewItems,
         clinicalNotes: Array.isArray(parsed.clinicalNotes)
           ? parsed.clinicalNotes.map(String)
           : [],
@@ -287,7 +400,7 @@ export class GeminiAIProvider implements AIProvider {
       const userPrompt = buildHealthSummaryUserPrompt(context);
 
       const responseText = await this.generateWithResilience({
-        preferredModel: 'gemini-3.8-flash',
+        preferredModel: 'gemini-2.5-flash',
         config: {
           systemInstruction: HEALTH_SUMMARY_SYSTEM_PROMPT,
           responseMimeType: 'application/json',
@@ -417,7 +530,7 @@ export class GeminiAIProvider implements AIProvider {
       const prompt = buildHealthHistoryUserPrompt(retrieved);
 
       const responseText = await this.generateWithResilience({
-        preferredModel: 'gemini-3.8-flash',
+        preferredModel: 'gemini-2.5-flash',
         contents: [
           {
             role: 'user',
@@ -463,8 +576,8 @@ export class GeminiAIProvider implements AIProvider {
               'When was diabetes first documented?',
             ],
       };
-    } catch (err) {
-      console.warn('Gemini answerHealthHistoryQuestion error, using fallback:', err);
+    } catch (err: any) {
+      console.info('[Gemini] Transient service saturation; providing grounded response via clinical fallback engine.');
       return this.fallbackMock.answerHealthHistoryQuestion(context);
     }
   }

@@ -7,6 +7,7 @@ import {
   Calendar,
   Layers,
   ArrowRight,
+  FileDown,
 } from 'lucide-react';
 import { PageHeader } from '../../components/dashboard/PageHeader';
 import { Button } from '../../components/ui/Button';
@@ -31,14 +32,16 @@ interface HealthSummaryPageProps {
   patient?: PatientProfile;
   onNavigate: (route: NavigationRoute) => void;
   onOpenUpload?: () => void;
+  onOpenExportReport?: () => void;
 }
 
 export function HealthSummaryPage({
   patient,
   onNavigate,
   onOpenUpload,
+  onOpenExportReport,
 }: HealthSummaryPageProps) {
-  const patientId = patient?.id || 'pat-arun-mathew-01';
+  const patientId = patient?.id || '';
 
   const [isLoading, setIsLoading] = useState(true);
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -136,6 +139,16 @@ export function HealthSummaryPage({
         subtitle="A longitudinal view of the patient's documented medical history."
         actions={
           <div className="flex items-center gap-2">
+            <Button
+              id="summary-export-report-btn"
+              variant="outline"
+              size="sm"
+              icon={<FileDown className="w-3.5 h-3.5 text-teal-700" />}
+              onClick={onOpenExportReport}
+              className="text-xs font-semibold gap-1.5 bg-white hover:bg-teal-50/60 border-teal-200 text-teal-950"
+            >
+              <span>Export Report</span>
+            </Button>
             <Button
               id="header-view-timeline-btn"
               variant="outline"

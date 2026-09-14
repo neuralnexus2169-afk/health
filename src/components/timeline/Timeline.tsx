@@ -9,16 +9,20 @@ interface TimelineProps {
   events: EnrichedMedicalEvent[];
   onSelectEvent: (event: EnrichedMedicalEvent) => void;
   onViewSource: (event: EnrichedMedicalEvent) => void;
+  onDeleteEvent?: (id: string, type: 'event' | 'diagnosis' | 'medication' | 'lab') => void;
   onResetFilters?: () => void;
   isFiltered?: boolean;
+  onOpenUpload?: () => void;
 }
 
 export function Timeline({
   events,
   onSelectEvent,
   onViewSource,
+  onDeleteEvent,
   onResetFilters,
   isFiltered = false,
+  onOpenUpload,
 }: TimelineProps) {
   // Group events by Year in descending chronological order
   const groupedEvents = useMemo(() => {
@@ -51,15 +55,15 @@ export function Timeline({
           <CalendarX2 className="w-6 h-6" />
         </div>
         <h3 className="text-base font-bold text-zinc-900">
-          No medical events found
+          {isFiltered ? 'No medical events found' : 'Your health timeline is empty'}
         </h3>
         <p className="mt-1 text-sm text-zinc-500 max-w-md mx-auto">
           {isFiltered
             ? 'No healthcare encounters or laboratory results match your current search query or active filters.'
-            : 'There are no documented events in this health timeline.'}
+            : 'Upload a medical document or add a health event to begin building your history.'}
         </p>
-        {isFiltered && onResetFilters && (
-          <div className="mt-5">
+        <div className="mt-5 flex justify-center gap-3">
+          {isFiltered && onResetFilters ? (
             <Button
               variant="outline"
               size="sm"
@@ -68,8 +72,18 @@ export function Timeline({
             >
               Reset all filters
             </Button>
-          </div>
-        )}
+          ) : (
+            onOpenUpload && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={onOpenUpload}
+              >
+                Upload document
+              </Button>
+            )
+          )}
+        </div>
       </div>
     );
   }
@@ -95,6 +109,7 @@ export function Timeline({
                   event={evt}
                   onSelect={onSelectEvent}
                   onViewSource={onViewSource}
+                  onDeleteEvent={onDeleteEvent}
                 />
               ))}
             </div>

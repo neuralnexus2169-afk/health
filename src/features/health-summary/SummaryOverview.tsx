@@ -37,6 +37,26 @@ export function SummaryOverview({
       })
     : 'Recently';
 
+  const overviewText =
+    summary?.content.overview ||
+    'Analyzing confirmed clinical records to provide a longitudinal synthesis of diagnoses, therapies, and trajectory...';
+
+  const summaryPoints = React.useMemo(() => {
+    if (!overviewText) return [];
+    if (overviewText.includes('\n')) {
+      const lines = overviewText
+        .split('\n')
+        .map((l) => l.replace(/^[\s•\-\*]+/, '').trim())
+        .filter(Boolean);
+      if (lines.length > 0) return lines;
+    }
+    const sentences = overviewText
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    return sentences.length > 0 ? sentences : [overviewText];
+  }, [overviewText]);
+
   return (
     <div
       id="summary-overview-card"
@@ -118,13 +138,20 @@ export function SummaryOverview({
           <h2 className="text-lg font-bold text-slate-900 tracking-tight">
             Longitudinal Clinical Journey
           </h2>
-          <p
+          <ul
             id="summary-overview-paragraph"
-            className="text-sm sm:text-base text-slate-700 leading-relaxed max-w-4xl"
+            className="space-y-2.5 text-sm sm:text-base text-slate-700 max-w-4xl"
           >
-            {summary?.content.overview ||
-              'Analyzing confirmed clinical records to provide a longitudinal synthesis of diagnoses, therapies, and trajectory...'}
-          </p>
+            {summaryPoints.map((point, idx) => (
+              <li key={idx} className="flex items-start gap-3 leading-relaxed">
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-teal-600 mt-2.5 shrink-0"
+                  aria-hidden="true"
+                />
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* Record Observations if any */}

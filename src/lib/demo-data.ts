@@ -9,8 +9,8 @@ import {
 
 export const DEMO_PATIENTS: PatientProfile[] = [
   {
-    id: 'p-1',
-    name: 'Arun Mathew',
+    id: 'pat-john-doe-01',
+    name: 'John Doe',
     type: 'Demo Patient',
     age: 47,
     gender: 'Male',
@@ -23,7 +23,7 @@ export const DEMO_PATIENTS: PatientProfile[] = [
     primaryCarePhysician: 'Dr. Sarah Jenkins, MD (Internal Medicine)',
   },
   {
-    id: 'p-2',
+    id: 'pat-sarah-chen-02',
     name: 'Sarah Chen',
     type: 'Demo Patient',
     age: 39,
@@ -53,6 +53,12 @@ export const PRIMARY_NAV_ITEMS: NavigationItem[] = [
     badge: 'Core',
   },
   {
+    id: 'search',
+    label: 'Global Search',
+    href: '/search',
+    iconName: 'Search',
+  },
+  {
     id: 'health-summary',
     label: 'AI Health Summary',
     href: '/health-summary',
@@ -64,14 +70,12 @@ export const PRIMARY_NAV_ITEMS: NavigationItem[] = [
     label: 'Medical Documents',
     href: '/documents',
     iconName: 'FileText',
-    badge: '19',
   },
   {
     id: 'medications',
     label: 'Medications',
     href: '/medications',
     iconName: 'Pill',
-    badge: '2',
   },
   {
     id: 'diagnoses',
@@ -90,7 +94,14 @@ export const PRIMARY_NAV_ITEMS: NavigationItem[] = [
     label: 'AI Assistant',
     href: '/ai-assistant',
     iconName: 'Sparkles',
-    badge: 'Preview',
+    badge: 'AI',
+  },
+  {
+    id: 'contradictions',
+    label: 'Inconsistencies',
+    href: '/contradictions',
+    iconName: 'AlertTriangle',
+    badge: '1',
   },
 ];
 

@@ -46,13 +46,13 @@ export function DocumentList({
         </div>
 
         <h3 className="text-base font-bold text-zinc-900">
-          {isFiltered ? 'No matching documents found' : 'No medical documents yet'}
+          {isFiltered ? 'No matching documents found' : 'No medical documents'}
         </h3>
 
         <p className="mt-1 text-sm text-zinc-500 max-w-md mx-auto leading-relaxed">
           {isFiltered
             ? 'No records match your selected document type, status, or search query. Try adjusting your filters.'
-            : 'Upload a medical record to start building your longitudinal health history and clinical timeline.'}
+            : 'Upload your first medical document.'}
         </p>
 
         <div className="mt-5 flex items-center justify-center gap-3">

@@ -63,19 +63,40 @@ export function SearchDialog({ isOpen, onClose, onNavigate }: SearchDialogProps)
               <X className="w-4 h-4" />
             </button>
           )}
-          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 bg-zinc-100 border border-zinc-200 rounded">
-            ESC
-          </kbd>
         </div>
 
         <div className="p-3 max-h-80 overflow-y-auto">
-          <div className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider px-3 py-1.5">
-            {query ? 'Search Results' : 'Suggested Health Items'}
+          <div className="flex items-center justify-between px-3 py-1.5">
+            <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+              {query ? 'Quick Links' : 'Suggested Health Items'}
+            </span>
+            {query.trim() && (
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate('search');
+                  onClose();
+                }}
+                className="text-xs text-zinc-600 hover:text-zinc-900 font-medium cursor-pointer"
+              >
+                Open Full Search →
+              </button>
+            )}
           </div>
 
           {filteredLinks.length === 0 ? (
-            <div className="py-8 text-center text-sm text-zinc-500">
-              No matching medical records found for &ldquo;{query}&rdquo;
+            <div className="py-6 text-center text-sm text-zinc-500 space-y-2">
+              <p>No matching quick links found for &ldquo;{query}&rdquo;</p>
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate('search');
+                  onClose();
+                }}
+                className="text-xs font-semibold text-zinc-900 underline cursor-pointer"
+              >
+                Search all confirmed health records for &ldquo;{query}&rdquo;
+              </button>
             </div>
           ) : (
             <div className="space-y-1">
@@ -109,11 +130,6 @@ export function SearchDialog({ isOpen, onClose, onNavigate }: SearchDialogProps)
               })}
             </div>
           )}
-        </div>
-
-        <div className="px-4 py-2.5 bg-zinc-50 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
-          <span>Search demo health history</span>
-          <span>Press Enter to select</span>
         </div>
       </div>
     </div>

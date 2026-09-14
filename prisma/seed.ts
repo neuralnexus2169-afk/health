@@ -76,6 +76,10 @@ function mapMedStatus(s: string): MedicationStatus {
 }
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    console.log('Skipping seed in production mode.');
+    return;
+  }
   console.log('🩺 Starting HealthTimeline medical database seed...');
 
   try {

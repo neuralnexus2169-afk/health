@@ -5,6 +5,7 @@ import {
   ShieldCheck,
   CheckCircle2,
   AlertTriangle,
+  AlertCircle,
   FileText,
   Building2,
   User,
@@ -21,6 +22,11 @@ import {
   ArrowRight,
   HelpCircle,
   ExternalLink,
+  UserCheck,
+  ShieldAlert,
+  FileQuestion,
+  Clock,
+  ArrowUpRight,
 } from 'lucide-react';
 import {
   DocumentExtraction,
@@ -31,6 +37,10 @@ import {
   ExtractedLabResult,
   ExtractedProcedure,
   ExtractedAllergy,
+  ExtractedPatientInfo,
+  ExtractedMedicalEventItem,
+  ExtractedNeedsReviewItem,
+  ReviewState,
 } from '../../../types/medical';
 import { updateExtractionReview, confirmExtraction } from '../../../services/extractionService';
 import { EditExtractedItemModal, EditableItem } from './EditExtractedItemModal';
@@ -69,14 +79,18 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
     data.medications.filter((m) => m.accepted !== false).length +
     data.labResults.filter((l) => l.accepted !== false).length +
     data.procedures.filter((p) => p.accepted !== false).length +
-    data.allergies.filter((a) => a.accepted !== false).length;
+    data.allergies.filter((a) => a.accepted !== false).length +
+    (data.medicalEvents || []).filter((e) => e.accepted !== false).length +
+    (data.needsReviewItems || []).filter((n) => n.accepted === true).length;
 
   const totalItemsCount =
     data.diagnoses.length +
     data.medications.length +
     data.labResults.length +
     data.procedures.length +
-    data.allergies.length;
+    data.allergies.length +
+    (data.medicalEvents?.length || 0) +
+    (data.needsReviewItems?.length || 0);
 
   // Toggle item acceptance
   const toggleDiagnosis = (index: number) => {
@@ -129,6 +143,91 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
     setHasUnsavedModifications(true);
   };
 
+  const toggleMedicalEvent = (index: number) => {
+    setData((prev) => {
+      const next = { ...prev };
+      if (!next.medicalEvents) return prev;
+      const current = next.medicalEvents[index];
+      next.medicalEvents[index] = { ...current, accepted: current.accepted === false ? true : false };
+      return next;
+    });
+    setHasUnsavedModifications(true);
+  };
+
+  const toggleNeedsReviewItem = (index: number) => {
+    setData((prev) => {
+      const next = { ...prev };
+      if (!next.needsReviewItems) return prev;
+      const current = next.needsReviewItems[index];
+      next.needsReviewItems[index] = { ...current, accepted: current.accepted === true ? false : true };
+      return next;
+    });
+    setHasUnsavedModifications(true);
+  };
+
+  // Convert needs review item directly into clinical entity
+  const convertNeedsReviewToDiagnosis = (index: number) => {
+    setData((prev) => {
+      const item = prev.needsReviewItems?.[index];
+      if (!item) return prev;
+      const newDiag: ExtractedDiagnosis = {
+        id: `conv-diag-${Date.now()}`,
+        name: item.rawText,
+        status: 'Active',
+        confidence: 'Medium',
+        reviewState: 'High Confidence',
+        confidenceReason: 'Verified and converted by clinician from flagged item',
+        sourceText: item.rawText,
+        sourceLocation: item.sourceLocation,
+        accepted: true,
+      };
+      const next = { ...prev };
+      next.diagnoses = [...next.diagnoses, newDiag];
+      if (next.needsReviewItems) {
+        next.needsReviewItems[index] = {
+          ...item,
+          accepted: false,
+          reviewState: 'High Confidence',
+          confidenceReason: 'Converted into verified Diagnosis',
+        };
+      }
+      return next;
+    });
+    setHasUnsavedModifications(true);
+  };
+
+  const convertNeedsReviewToMedication = (index: number) => {
+    setData((prev) => {
+      const item = prev.needsReviewItems?.[index];
+      if (!item) return prev;
+      const newMed: ExtractedMedication = {
+        id: `conv-med-${Date.now()}`,
+        name: item.rawText,
+        dosage: 'As directed',
+        frequency: 'Daily',
+        status: 'Active',
+        confidence: 'Medium',
+        reviewState: 'High Confidence',
+        confidenceReason: 'Verified and converted by clinician from flagged item',
+        sourceText: item.rawText,
+        sourceLocation: item.sourceLocation,
+        accepted: true,
+      };
+      const next = { ...prev };
+      next.medications = [...next.medications, newMed];
+      if (next.needsReviewItems) {
+        next.needsReviewItems[index] = {
+          ...item,
+          accepted: false,
+          reviewState: 'High Confidence',
+          confidenceReason: 'Converted into verified Medication',
+        };
+      }
+      return next;
+    });
+    setHasUnsavedModifications(true);
+  };
+
   // Handle saving an edited item
   const handleSaveItem = async (edited: EditableItem) => {
     setData((prev) => {
@@ -143,6 +242,14 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
         next.procedures[edited.index] = { ...edited.item, accepted: true };
       } else if (edited.type === 'allergy') {
         next.allergies[edited.index] = { ...edited.item, accepted: true };
+      } else if (edited.type === 'patientInfo') {
+        next.patientInfo = { ...edited.item };
+      } else if (edited.type === 'medicalEvent') {
+        if (!next.medicalEvents) next.medicalEvents = [];
+        next.medicalEvents[edited.index] = { ...edited.item, accepted: true };
+      } else if (edited.type === 'needsReview') {
+        if (!next.needsReviewItems) next.needsReviewItems = [];
+        next.needsReviewItems[edited.index] = { ...edited.item, accepted: true };
       }
       return next;
     });
@@ -180,6 +287,8 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
     }
   };
 
+  const flaggedItemsCount = (data.needsReviewItems || []).length;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-slate-900/60 backdrop-blur-xs">
       <div
@@ -201,9 +310,15 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                   Needs Review
                 </span>
+                {flaggedItemsCount > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                    <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
+                    {flaggedItemsCount} Ambiguities Flagged
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Check the information found in this document before adding it to the patient's health history.
+                Upload → Extract → Categorize → Flag uncertainty → Review → Confirm → Integrate
               </p>
             </div>
           </div>
@@ -221,7 +336,7 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
         <div className="px-6 py-2.5 bg-amber-50/80 border-b border-amber-200/60 flex items-center gap-2.5 text-xs text-amber-900 shrink-0">
           <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
           <p className="leading-snug">
-            <strong className="font-semibold">Safety constraint:</strong> AI-extracted findings are interpretations of the source document and do NOT become part of the patient's medical history until confirmed by you.
+            <strong className="font-semibold">Safety constraint:</strong> AI proposes → human verifies → application records. Uncertain findings or ambiguous handwriting will NOT become confirmed medical facts without explicit human verification.
           </p>
         </div>
 
@@ -260,7 +375,7 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-slate-400" />
-                Document Information
+                Document Metadata & Attribution
               </span>
               <span className="text-[11px] font-mono text-slate-400">
                 Model: {extraction.model}
@@ -300,7 +415,185 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
             )}
           </div>
 
-          {/* Section 2: Diagnoses */}
+          {/* Section 1.5: Patient Demographics Identification */}
+          {data.patientInfo && (
+            <div className="bg-blue-50/50 border border-blue-200/70 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center gap-2">
+                  <UserCheck className="w-4 h-4 text-blue-600" />
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    Patient Demographics Verification
+                  </h3>
+                  {data.patientInfo.reviewState && (
+                    <ReviewStateBadge state={data.patientInfo.reviewState} reason={data.patientInfo.confidenceReason} />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActiveEditingItem({
+                      type: 'patientInfo',
+                      item: data.patientInfo!,
+                      index: 0,
+                    })
+                  }
+                  className="px-2.5 py-1 text-xs font-medium text-blue-700 hover:text-blue-900 hover:bg-blue-100/60 rounded-lg border border-blue-200 flex items-center gap-1 transition-colors"
+                >
+                  <Edit2 className="w-3 h-3" /> Edit Demographics
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-white/70 p-3 rounded-lg border border-blue-100">
+                <div>
+                  <span className="text-slate-400 block text-[11px]">Document Name</span>
+                  <span className="font-semibold text-slate-800">{data.patientInfo.name || 'Not specified'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[11px]">Date of Birth</span>
+                  <span className="font-semibold text-slate-800">{data.patientInfo.dateOfBirth || 'Not specified'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[11px]">Gender</span>
+                  <span className="font-semibold text-slate-800">{data.patientInfo.gender || 'Not specified'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[11px]">MRN / Patient ID</span>
+                  <span className="font-semibold text-slate-800">{data.patientInfo.mrn || 'Not specified'}</span>
+                </div>
+              </div>
+
+              {data.patientInfo.confidenceReason && (
+                <div className="text-[11px] text-blue-700 mt-2 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span>{data.patientInfo.confidenceReason}</span>
+                  {data.patientInfo.sourceLocation && (
+                    <span className="text-blue-600/70 font-mono">({data.patientInfo.sourceLocation})</span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Section 2: Flagged Uncertainty & Needs Review Items */}
+          {data.needsReviewItems && data.needsReviewItems.length > 0 && (
+            <div className="bg-amber-50/60 border-2 border-amber-300 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-5 h-5 text-amber-600" />
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-900">
+                      Flagged for Human Verification ({data.needsReviewItems.length})
+                    </h3>
+                    <p className="text-xs text-amber-800">
+                      Ambiguous handwriting, unclear dosage, or incomplete lab parameters detected.
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-1 bg-amber-100 text-amber-900 rounded-full border border-amber-300">
+                  Clinical Caution
+                </span>
+              </div>
+
+              <div className="space-y-3 pt-1">
+                {data.needsReviewItems.map((item, idx) => {
+                  const isAccepted = item.accepted === true;
+                  return (
+                    <div
+                      key={item.id || idx}
+                      className={`p-3.5 rounded-xl border transition-all ${
+                        isAccepted
+                          ? 'bg-white border-teal-300 shadow-xs'
+                          : 'bg-white/90 border-amber-200'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1.5 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-bold px-2 py-0.5 bg-amber-100 text-amber-800 rounded">
+                              {item.suggestedCategory}
+                            </span>
+                            <ReviewStateBadge state={item.reviewState || 'Ambiguous'} reason={item.confidenceReason} />
+                            {item.sourceLocation && (
+                              <span className="text-[11px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                                {item.sourceLocation}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-800">
+                            "{item.rawText}"
+                          </div>
+
+                          {item.confidenceReason && (
+                            <div className="text-xs text-amber-800 flex items-center gap-1 font-medium">
+                              <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                              <span>Reason: {item.confidenceReason}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setActiveEditingItem({
+                                type: 'needsReview',
+                                item,
+                                index: idx,
+                              })
+                            }
+                            className="px-2.5 py-1 text-xs font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 flex items-center gap-1 transition-colors"
+                          >
+                            <Edit2 className="w-3 h-3" /> Clarify / Edit
+                          </button>
+
+                          {item.suggestedCategory === 'Medication' && (
+                            <button
+                              type="button"
+                              onClick={() => convertNeedsReviewToMedication(idx)}
+                              className="px-2.5 py-1 text-xs font-medium text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 flex items-center gap-1 transition-colors"
+                            >
+                              <Pill className="w-3 h-3" /> Add as Med
+                            </button>
+                          )}
+
+                          {item.suggestedCategory === 'Diagnosis' && (
+                            <button
+                              type="button"
+                              onClick={() => convertNeedsReviewToDiagnosis(idx)}
+                              className="px-2.5 py-1 text-xs font-medium text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 rounded-lg border border-teal-200 flex items-center gap-1 transition-colors"
+                            >
+                              <Activity className="w-3 h-3" /> Add as Diag
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => toggleNeedsReviewItem(idx)}
+                            className={`px-2.5 py-1 text-xs font-medium rounded-lg border transition-colors flex items-center gap-1 ${
+                              isAccepted
+                                ? 'text-teal-700 bg-teal-50 border-teal-300 hover:bg-teal-100'
+                                : 'text-slate-500 bg-slate-50 border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            {isAccepted ? (
+                              <>
+                                <Check className="w-3 h-3" /> Included
+                              </>
+                            ) : (
+                              'Keep Excluded'
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Section 3: Diagnoses */}
           <div>
             <div className="flex items-center justify-between mb-2.5">
               <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
@@ -346,15 +639,29 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
                             {diag.confidence && (
                               <ConfidenceBadge level={diag.confidence} />
                             )}
+                            {diag.reviewState && (
+                              <ReviewStateBadge state={diag.reviewState} reason={diag.confidenceReason} />
+                            )}
                           </div>
 
                           {/* Source citation */}
-                          <div className="text-xs text-slate-500 flex items-center gap-1.5 pt-0.5">
-                            <FileText className="w-3.5 h-3.5 text-slate-400" />
-                            <span>
+                          <div className="text-xs text-slate-500 flex items-center gap-2 pt-0.5 flex-wrap">
+                            <span className="flex items-center gap-1">
+                              <FileText className="w-3.5 h-3.5 text-slate-400" />
                               Source: {document.documentType} — Page {diag.pageNumber || 1}
                             </span>
+                            {diag.sourceLocation && (
+                              <span className="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                                {diag.sourceLocation}
+                              </span>
+                            )}
                           </div>
+
+                          {diag.confidenceReason && (
+                            <div className="text-[11px] text-slate-600 font-medium">
+                              Evidence: {diag.confidenceReason}
+                            </div>
+                          )}
 
                           {diag.sourceQuote && (
                             <div className="text-[11px] text-slate-600 italic bg-slate-50 px-2.5 py-1.5 rounded-md border border-slate-100 mt-1 font-mono">
@@ -406,7 +713,7 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
             )}
           </div>
 
-          {/* Section 3: Medications */}
+          {/* Section 4: Medications */}
           <div>
             <div className="flex items-center justify-between mb-2.5">
               <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
@@ -457,15 +764,29 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
                             {med.confidence && (
                               <ConfidenceBadge level={med.confidence} />
                             )}
+                            {med.reviewState && (
+                              <ReviewStateBadge state={med.reviewState} reason={med.confidenceReason} />
+                            )}
                           </div>
 
                           {/* Source citation */}
-                          <div className="text-xs text-slate-500 flex items-center gap-1.5 pt-0.5">
-                            <FileText className="w-3.5 h-3.5 text-slate-400" />
-                            <span>
+                          <div className="text-xs text-slate-500 flex items-center gap-2 pt-0.5 flex-wrap">
+                            <span className="flex items-center gap-1">
+                              <FileText className="w-3.5 h-3.5 text-slate-400" />
                               Source: {document.documentType} — Page {med.pageNumber || 1}
                             </span>
+                            {med.sourceLocation && (
+                              <span className="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                                {med.sourceLocation}
+                              </span>
+                            )}
                           </div>
+
+                          {med.confidenceReason && (
+                            <div className="text-[11px] text-slate-600 font-medium">
+                              Evidence: {med.confidenceReason}
+                            </div>
+                          )}
 
                           {med.sourceQuote && (
                             <div className="text-[11px] text-slate-600 italic bg-slate-50 px-2.5 py-1.5 rounded-md border border-slate-100 mt-1 font-mono">
@@ -517,7 +838,7 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
             )}
           </div>
 
-          {/* Section 4: Laboratory Results */}
+          {/* Section 5: Laboratory Results */}
           <div>
             <div className="flex items-center justify-between mb-2.5">
               <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
@@ -574,15 +895,29 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
                             {lab.confidence && (
                               <ConfidenceBadge level={lab.confidence} />
                             )}
+                            {lab.reviewState && (
+                              <ReviewStateBadge state={lab.reviewState} reason={lab.confidenceReason} />
+                            )}
                           </div>
 
                           {/* Source citation */}
-                          <div className="text-xs text-slate-500 flex items-center gap-1.5 pt-0.5">
-                            <FileText className="w-3.5 h-3.5 text-slate-400" />
-                            <span>
+                          <div className="text-xs text-slate-500 flex items-center gap-2 pt-0.5 flex-wrap">
+                            <span className="flex items-center gap-1">
+                              <FileText className="w-3.5 h-3.5 text-slate-400" />
                               Source: {document.documentType} — Page {lab.pageNumber || 1}
                             </span>
+                            {lab.sourceLocation && (
+                              <span className="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                                {lab.sourceLocation}
+                              </span>
+                            )}
                           </div>
+
+                          {lab.confidenceReason && (
+                            <div className="text-[11px] text-slate-600 font-medium">
+                              Evidence: {lab.confidenceReason}
+                            </div>
+                          )}
 
                           {lab.sourceQuote && (
                             <div className="text-[11px] text-slate-600 italic bg-slate-50 px-2.5 py-1.5 rounded-md border border-slate-100 mt-1 font-mono">
@@ -634,7 +969,7 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
             )}
           </div>
 
-          {/* Section 5: Procedures */}
+          {/* Section 6: Procedures */}
           {data.procedures.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-2.5">
@@ -672,7 +1007,15 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
                                 Provider: {proc.provider}
                               </span>
                             )}
+                            {proc.reviewState && (
+                              <ReviewStateBadge state={proc.reviewState} reason={proc.confidenceReason} />
+                            )}
                           </div>
+                          {proc.sourceLocation && (
+                            <span className="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                              {proc.sourceLocation}
+                            </span>
+                          )}
                           {proc.sourceQuote && (
                             <div className="text-[11px] text-slate-600 italic bg-slate-50 px-2.5 py-1 rounded border border-slate-100 font-mono">
                               "{proc.sourceQuote}"
@@ -713,7 +1056,7 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
             </div>
           )}
 
-          {/* Section 6: Allergies */}
+          {/* Section 7: Allergies */}
           {data.allergies.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-2.5">
@@ -754,7 +1097,15 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
                             {all.confidence && (
                               <ConfidenceBadge level={all.confidence} />
                             )}
+                            {all.reviewState && (
+                              <ReviewStateBadge state={all.reviewState} reason={all.confidenceReason} />
+                            )}
                           </div>
+                          {all.sourceLocation && (
+                            <span className="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                              {all.sourceLocation}
+                            </span>
+                          )}
                           {all.sourceQuote && (
                             <div className="text-[11px] text-slate-600 italic bg-slate-50 px-2.5 py-1 rounded border border-slate-100 font-mono">
                               "{all.sourceQuote}"
@@ -795,7 +1146,98 @@ export const ExtractionReviewModal: React.FC<ExtractionReviewModalProps> = ({
             </div>
           )}
 
-          {/* Section 7: Clinical Notes */}
+          {/* Section 8: Medical Encounter Events */}
+          {data.medicalEvents && data.medicalEvents.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-2.5">
+                <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-indigo-600" />
+                  Medical Encounter Events ({data.medicalEvents.length})
+                </h3>
+              </div>
+
+              <div className="space-y-2.5">
+                {data.medicalEvents.map((evt, index) => {
+                  const isAccepted = evt.accepted !== false;
+                  return (
+                    <div
+                      key={evt.id || index}
+                      className={`p-3.5 rounded-xl border transition-all ${
+                        isAccepted
+                          ? 'bg-white border-slate-200 shadow-2xs'
+                          : 'bg-slate-50 border-slate-200/60 opacity-60'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-semibold text-slate-900">
+                              {evt.title}
+                            </span>
+                            <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                              {evt.eventType}
+                            </span>
+                            <span className="text-xs text-slate-500">
+                              Date: {evt.date}
+                            </span>
+                            {evt.facility && (
+                              <span className="text-xs text-slate-500">
+                                Facility: {evt.facility}
+                              </span>
+                            )}
+                            {evt.reviewState && (
+                              <ReviewStateBadge state={evt.reviewState} reason={evt.confidenceReason} />
+                            )}
+                          </div>
+
+                          {evt.summary && (
+                            <p className="text-xs text-slate-600 mt-1">
+                              {evt.summary}
+                            </p>
+                          )}
+
+                          {evt.sourceLocation && (
+                            <span className="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                              {evt.sourceLocation}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setActiveEditingItem({
+                                type: 'medicalEvent',
+                                item: evt,
+                                index,
+                              })
+                            }
+                            className="px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg border border-slate-200 flex items-center gap-1"
+                          >
+                            <Edit2 className="w-3 h-3" /> Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleMedicalEvent(index)}
+                            className={`px-2.5 py-1 text-xs font-medium rounded-lg border ${
+                              isAccepted
+                                ? 'text-rose-700 bg-rose-50/60 border-rose-200'
+                                : 'text-teal-700 bg-teal-50 border-teal-200'
+                            }`}
+                          >
+                            {isAccepted ? 'Exclude' : 'Include'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Section 9: Clinical Notes */}
           {data.clinicalNotes && data.clinicalNotes.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-2">
@@ -891,6 +1333,54 @@ function ConfidenceBadge({ level }: { level: 'High' | 'Medium' | 'Low' }) {
   return (
     <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-rose-50 text-rose-700 border border-rose-200">
       Low confidence · Verify
+    </span>
+  );
+}
+
+// Review State indicator component
+function ReviewStateBadge({ state, reason }: { state?: ReviewState; reason?: string }) {
+  if (!state) return null;
+
+  if (state === 'High Confidence') {
+    return (
+      <span
+        title={reason || 'High confidence extraction'}
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200"
+      >
+        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+        High Confidence
+      </span>
+    );
+  }
+  if (state === 'Review Recommended') {
+    return (
+      <span
+        title={reason || 'Review recommended prior to integration'}
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-800 border border-amber-300"
+      >
+        <AlertTriangle className="w-3 h-3 text-amber-600" />
+        Review Recommended
+      </span>
+    );
+  }
+  if (state === 'Ambiguous') {
+    return (
+      <span
+        title={reason || 'Ambiguous handwriting or unclear notation'}
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-800 border border-rose-300"
+      >
+        <HelpCircle className="w-3 h-3 text-rose-600" />
+        Ambiguous · Verify
+      </span>
+    );
+  }
+  return (
+    <span
+      title={reason || 'Incomplete details'}
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-300"
+    >
+      <AlertTriangle className="w-3 h-3 text-slate-500" />
+      Incomplete
     </span>
   );
 }
