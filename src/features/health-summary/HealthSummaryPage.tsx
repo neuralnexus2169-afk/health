@@ -32,6 +32,7 @@ interface HealthSummaryPageProps {
   patient?: PatientProfile;
   onNavigate: (route: NavigationRoute) => void;
   onOpenUpload?: () => void;
+  onOpenAddRecord?: () => void;
   onOpenExportReport?: () => void;
 }
 

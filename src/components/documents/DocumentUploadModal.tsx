@@ -183,7 +183,7 @@ export function DocumentUploadModal({
       
       try {
         // 1. Store file in decoupled DocumentStorage abstraction
-        await documentStorage.upload(fileToUpload.file);
+        const storedFile = await documentStorage.upload(fileToUpload.file);
         handleUpdateFileMetadata(fileToUpload.id, { progress: 55, status: 'processing' });
 
         const safeName = sanitizeFileName(fileToUpload.file.name);
@@ -204,10 +204,21 @@ export function DocumentUploadModal({
           extractedTextSnippet: `Ingested medical record: ${safeName}. Clinical extraction and terminology normalization scheduled.`,
         });
 
-        // Trigger AI Extraction asynchronously here
-        fetch(`/api/documents/${newDocId}/extract`, { method: 'POST' }).catch(err => {
-            console.error('Failed to trigger background extraction for', newDocId, err);
-        });
+        // Trigger AI Extraction with base64 data
+        try {
+          await fetch(`/api/documents/${newDocId}/extract`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              base64Data: storedFile?.dataUrl,
+              mimeType: storedFile?.contentType,
+              fileName: safeName,
+              documentType: fileToUpload.documentType,
+            }),
+          });
+        } catch (extractErr) {
+          console.error('Extraction trigger error for', newDocId, extractErr);
+        }
 
         handleUpdateFileMetadata(fileToUpload.id, { progress: 100, status: 'ready' });
       } catch (err: any) {

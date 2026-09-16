@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import { getAIProvider } from './src/lib/ai/index';
@@ -21,11 +22,13 @@ import {
 } from './src/lib/db/repositories/index';
 import { contradictionDetector } from './src/lib/contradiction-detector';
 import { documentStorage } from './src/lib/storage/documentStorage';
-import { PatientConfirmedRecordsContext, StoredHealthSummary, HealthHistoryQueryContext } from './src/types/medical';
+import { PatientConfirmedRecordsContext, StoredHealthSummary, HealthHistoryQueryContext, DocumentExtraction } from './src/types/medical';
 import { healthHistoryRetriever } from './src/lib/health-history/health-history-retriever';
 import { healthReportService } from './src/lib/services/health-report';
 import { executeGlobalHealthSearch } from './src/lib/search/searchEngine';
 import { SearchResultCategory } from './src/types/search';
+import { confirmExtraction } from './src/services/extractionService';
+import { syncStateToSqlite, loadStateFromSqlite } from './src/lib/db/sqlite-sync';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,14 +41,116 @@ async function startServer() {
   app.use(express.json({ limit: '25mb' }));
   app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
+  const repoMap: Record<string, any> = {
+    patientRepository,
+    facilityRepository,
+    providerRepository,
+    documentRepository,
+    timelineRepository,
+    diagnosisRepository,
+    medicationRepository,
+    labResultRepository,
+    sourceReferenceRepository,
+    contradictionRepository,
+    documentExtractionRepository,
+    healthSummaryRepository,
+  };
+
+  // Helper functions to persist and load database state
+  async function loadPersistedState() {
+    try {
+      const dbPath = path.join(process.cwd(), 'uploads', 'db_state.json');
+      if (fs.existsSync(dbPath)) {
+        const data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+        if (data.patients) (patientRepository as any).patients = data.patients;
+        if (data.documents) (documentRepository as any).documents = data.documents;
+        if (data.facilities) (facilityRepository as any).facilities = data.facilities;
+        if (data.providers) (providerRepository as any).providers = data.providers;
+        if (data.events) (timelineRepository as any).events = data.events;
+        if (data.diagnoses) (diagnosisRepository as any).diagnoses = data.diagnoses;
+        if (data.medications) (medicationRepository as any).medications = data.medications;
+        if (data.labs) (labResultRepository as any).labResults = data.labs;
+        if (data.sources) (sourceReferenceRepository as any).references = data.sources;
+        if (data.contradictions) (contradictionRepository as any).contradictions = data.contradictions;
+        if (data.extractions) (documentExtractionRepository as any).extractions = data.extractions;
+        if (data.summaries) (healthSummaryRepository as any).summaries = data.summaries;
+        console.log(`Loaded persisted state: ${data.patients?.length || 0} patients, ${data.documents?.length || 0} documents`);
+      }
+
+      // Also hydrate from SQLite database if available
+      const sqliteState = await loadStateFromSqlite();
+      if (sqliteState && sqliteState.patients.length > 0) {
+        // Merge patients, preserving existing in-memory if needed
+        const existingPatientIds = new Set(((patientRepository as any).patients || []).map((p: any) => p.id));
+        for (const p of sqliteState.patients) {
+          if (!existingPatientIds.has(p.id)) {
+            (patientRepository as any).patients.push(p);
+          }
+        }
+        console.log(`Synchronized from SQLite database (dev.db): ${sqliteState.patients.length} patients, ${sqliteState.documents.length} documents`);
+      }
+    } catch (err) {
+      console.warn('Could not load database state:', err);
+    }
+  }
+
+  function savePersistedState() {
+    try {
+      const dbPath = path.join(process.cwd(), 'uploads', 'db_state.json');
+      const data = {
+        patients: (patientRepository as any).patients || [],
+        documents: (documentRepository as any).documents || [],
+        facilities: (facilityRepository as any).facilities || [],
+        providers: (providerRepository as any).providers || [],
+        events: (timelineRepository as any).events || [],
+        diagnoses: (diagnosisRepository as any).diagnoses || [],
+        medications: (medicationRepository as any).medications || [],
+        labs: (labResultRepository as any).labResults || [],
+        sources: (sourceReferenceRepository as any).references || [],
+        contradictions: (contradictionRepository as any).contradictions || [],
+        extractions: (documentExtractionRepository as any).extractions || [],
+        summaries: (healthSummaryRepository as any).summaries || [],
+      };
+      fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+
+      // Asynchronously sync updates to SQLite database file
+      syncStateToSqlite(data).catch((err) => {
+        console.warn('Background SQLite sync notice:', err);
+      });
+    } catch (err) {
+      console.warn('Could not save db_state.json:', err);
+    }
+  }
+
+  // Load state on startup
+  loadPersistedState();
+
+  // SQLite Database status endpoint
+  app.get('/api/db/status', async (req, res) => {
+    try {
+      const sqliteState = await loadStateFromSqlite();
+      res.json({
+        database: 'SQLite',
+        provider: 'sqlite',
+        databaseFile: 'prisma/dev.db',
+        status: 'connected',
+        patientCount: sqliteState?.patients.length || (patientRepository as any).patients?.length || 0,
+        documentCount: sqliteState?.documents.length || (documentRepository as any).documents?.length || 0,
+        eventCount: sqliteState?.events.length || (timelineRepository as any).events?.length || 0,
+        medicationCount: sqliteState?.medications.length || (medicationRepository as any).medications?.length || 0,
+        labCount: sqliteState?.labs.length || (labResultRepository as any).labResults?.length || 0,
+      });
+    } catch (err) {
+      res.status(500).json({ status: 'error', error: String(err) });
+    }
+  });
+
   // Dynamic DB RPC Endpoint to sync client/server memory
   app.post('/api/db/:repo/:method', async (req, res) => {
     const { repo, method } = req.params;
     const { args = [] } = req.body;
     try {
-      // Access the raw repositories directly by importing them from index
-      const repositories = await import('./src/lib/db/repositories/index.js');
-      const repository = (repositories as any)[repo];
+      const repository = repoMap[repo];
       if (!repository) {
         return res.status(404).json({ error: `Repository ${repo} not found` });
       }
@@ -56,6 +161,11 @@ async function startServer() {
       }
 
       const result = await func.apply(repository, args);
+      
+      if (typeof method === 'string' && (method.startsWith('create') || method.startsWith('update') || method.startsWith('delete') || method.includes('confirm') || method.includes('Confirm'))) {
+        savePersistedState();
+      }
+
       res.json({ result });
     } catch (err: any) {
       console.error(`DB RPC Error (${repo}.${method}):`, err);
@@ -77,6 +187,86 @@ async function startServer() {
     });
   });
 
+  // POST /api/storage/upload
+  app.post('/api/storage/upload', async (req, res) => {
+    try {
+      const { key, fileName, originalName, contentType, sizeBytes, dataUrl } = req.body || {};
+      if (!fileName) {
+        return res.status(400).json({ error: 'fileName is required.' });
+      }
+
+      const safeKey = key || `doc_${Date.now()}_${fileName}`;
+      const storedFile = {
+        key: safeKey,
+        fileName,
+        originalName: originalName || fileName,
+        contentType: contentType || (fileName.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream'),
+        sizeBytes: Number(sizeBytes) || (dataUrl ? Math.round(dataUrl.length * 0.75) : 0),
+        dataUrl,
+        uploadedAt: new Date().toISOString(),
+      };
+
+      // Store in server memory
+      (documentStorage as any).filesMap?.set(safeKey, storedFile);
+
+      // Persist to disk in uploads directory
+      if (dataUrl && dataUrl.includes('base64,')) {
+        try {
+          const uploadsDir = path.join(process.cwd(), 'uploads');
+          if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+          }
+          const base64Data = dataUrl.split('base64,')[1];
+          if (base64Data) {
+            const buffer = Buffer.from(base64Data, 'base64');
+            fs.writeFileSync(path.join(uploadsDir, fileName), buffer);
+          }
+        } catch (fsErr) {
+          console.warn('Could not write file to uploads dir:', fsErr);
+        }
+      }
+
+      res.json({ success: true, file: storedFile });
+    } catch (err: any) {
+      console.error('Storage upload error:', err);
+      res.status(500).json({ error: err.message || 'Storage upload failed' });
+    }
+  });
+
+  // GET /api/storage/file/:fileName
+  app.get('/api/storage/file/:fileName', async (req, res) => {
+    const fileName = req.params.fileName;
+    try {
+      const uploadsDir = path.join(process.cwd(), 'uploads');
+      const filePath = path.join(uploadsDir, fileName);
+      if (fs.existsSync(filePath)) {
+        const mimeType = fileName.endsWith('.pdf')
+          ? 'application/pdf'
+          : fileName.endsWith('.png')
+          ? 'image/png'
+          : fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')
+          ? 'image/jpeg'
+          : 'application/octet-stream';
+        res.setHeader('Content-Type', mimeType);
+        return fs.createReadStream(filePath).pipe(res);
+      }
+
+      // Check in-memory documentStorage
+      const storedFiles = await documentStorage.list();
+      const stored = storedFiles.find((f) => f.fileName === fileName || f.originalName === fileName);
+      if (stored?.dataUrl && stored.dataUrl.includes('base64,')) {
+        const base64Data = stored.dataUrl.split('base64,')[1];
+        const buffer = Buffer.from(base64Data, 'base64');
+        res.setHeader('Content-Type', stored.contentType || 'application/octet-stream');
+        return res.send(buffer);
+      }
+
+      res.status(404).json({ error: `File ${fileName} not found.` });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Failed to serve file' });
+    }
+  });
+
   // POST /api/documents/:id/extract
   app.post('/api/documents/:id/extract', async (req, res) => {
     const documentId = req.params.id;
@@ -86,9 +276,40 @@ async function startServer() {
         return res.status(404).json({ error: `Document ${documentId} not found.` });
       }
 
-      // Read stored file if available
-      const storedFiles = await documentStorage.list();
-      const stored = storedFiles.find((f) => f.fileName === doc.fileName);
+      // 1. Check request body for base64 data passed directly from client
+      let base64Data: string | undefined = req.body?.base64Data;
+      let mimeType: string | undefined = req.body?.mimeType;
+
+      // 2. If not in body, check server's in-memory documentStorage
+      if (!base64Data) {
+        const storedFiles = await documentStorage.list();
+        const stored = storedFiles.find((f) => f.fileName === doc.fileName || f.originalName === doc.fileName);
+        if (stored?.dataUrl) {
+          base64Data = stored.dataUrl;
+          mimeType = mimeType || stored.contentType;
+        }
+      }
+
+      // 3. If not in memory, check uploads directory on disk
+      if (!base64Data) {
+        try {
+          const uploadsDir = path.join(process.cwd(), 'uploads');
+          const filePath = path.join(uploadsDir, doc.fileName);
+          if (fs.existsSync(filePath)) {
+            const buf = fs.readFileSync(filePath);
+            const ext = path.extname(doc.fileName).toLowerCase();
+            const fileMime = ext === '.pdf' ? 'application/pdf' : ext === '.png' ? 'image/png' : 'image/jpeg';
+            base64Data = `data:${fileMime};base64,${buf.toString('base64')}`;
+            mimeType = mimeType || fileMime;
+          }
+        } catch (readErr) {
+          console.warn('Could not read from uploads directory:', readErr);
+        }
+      }
+
+      if (!mimeType && doc.fileName.toLowerCase().endsWith('.pdf')) {
+        mimeType = 'application/pdf';
+      }
 
       const provider = getAIProvider();
 
@@ -96,25 +317,78 @@ async function startServer() {
         fileName: doc.fileName,
         documentType: doc.documentType,
         textSnippet: doc.extractedTextSnippet,
-        mimeType: stored?.contentType,
-        base64Data: stored?.dataUrl,
+        mimeType,
+        base64Data,
         fileSizeBytes: doc.fileSizeBytes,
       });
+
+      // Persist the extraction record to repository
+      const extractionId = `ext-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      const now = new Date().toISOString();
+      const extractionRecord: DocumentExtraction = {
+        id: extractionId,
+        documentId: doc.id,
+        model: provider.name,
+        status: 'Needs Review',
+        data: structuredData,
+        reviewedData: JSON.parse(JSON.stringify(structuredData)),
+        extractedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      await documentExtractionRepository.create(extractionRecord);
+      await documentRepository.updateStatus(doc.id, 'Needs Review');
+
+      // Update document metadata with extracted findings
+      if (structuredData.summarySnippet && !structuredData.summarySnippet.includes('No clinical information available')) {
+        doc.extractedTextSnippet = structuredData.summarySnippet;
+      }
+      if (structuredData.provider && (!doc.providerName || doc.providerName === 'Dr. Sarah Jenkins, MD')) {
+        doc.providerName = structuredData.provider;
+      }
+      if (structuredData.facility && (!doc.facilityName || doc.facilityName === 'Institutional Health Facility')) {
+        doc.facilityName = structuredData.facility;
+      }
+      if (structuredData.documentDate) {
+        doc.documentDate = structuredData.documentDate;
+      }
+
+      savePersistedState();
 
       res.json({
         success: true,
         data: structuredData,
-        extraction: {
-          documentId: doc.id,
-          model: provider.name,
-          status: 'Needs Review',
-          data: structuredData,
-        },
+        extraction: extractionRecord,
       });
     } catch (err: any) {
       console.error(`Error in /api/documents/${documentId}/extract:`, err);
       res.status(500).json({
         error: 'Extraction processing failed',
+        details: err?.message || String(err),
+      });
+    }
+  });
+
+  // POST /api/documents/:id/confirm
+  app.post('/api/documents/:id/confirm', async (req, res) => {
+    const documentId = req.params.id;
+    try {
+      const extractions = await documentExtractionRepository.findByDocumentId(documentId);
+      if (!extractions || extractions.length === 0) {
+        return res.status(404).json({ error: `No extractions found for document ${documentId}` });
+      }
+      const extraction = extractions[0];
+      const result = await confirmExtraction(extraction.id, req.body?.patientId);
+      savePersistedState();
+      res.json({
+        success: true,
+        ...result,
+      });
+    } catch (err: any) {
+      console.error(`Error in /api/documents/${documentId}/confirm:`, err);
+      res.status(500).json({
+        error: 'Confirmation processing failed',
         details: err?.message || String(err),
       });
     }
@@ -256,6 +530,7 @@ async function startServer() {
       };
 
       await healthSummaryRepository.create(newSummary);
+      savePersistedState();
 
       res.json({
         success: true,

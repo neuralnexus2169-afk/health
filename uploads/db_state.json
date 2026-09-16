@@ -1,0 +1,1235 @@
+{
+  "patients": [
+    {
+      "id": "pat-1789489062614",
+      "name": "Doe",
+      "dateOfBirth": "2026-09-07",
+      "gender": "Male",
+      "bloodGroup": "Unknown",
+      "allergies": [],
+      "createdAt": "2026-09-15T16:17:42.730Z",
+      "updatedAt": "2026-09-15T16:17:42.730Z"
+    }
+  ],
+  "documents": [
+    {
+      "id": "doc_1789489106381_7fa2u",
+      "patientId": "pat-1789489062614",
+      "fileName": "01_consultation_and_prescription.pdf",
+      "documentType": "Prescription",
+      "documentDate": "2025-03-10",
+      "facilityName": "Meridian Medical Centre",
+      "status": "Confirmed",
+      "pageCount": 2,
+      "fileSizeBytes": 27808,
+      "extractedTextSnippet": "Prescription order for Empagliflozin 10mg daily and Metformin 500mg ER BID.",
+      "createdAt": "2026-09-15T16:18:26.493Z",
+      "providerName": "Dr. Sarah Jenkins, MD"
+    },
+    {
+      "id": "doc_1789489106384_3k5le",
+      "patientId": "pat-1789489062614",
+      "fileName": "02_laboratory_report.pdf",
+      "documentType": "Lab Report",
+      "documentDate": "2026-09-15",
+      "facilityName": "Meridian Medical Centre",
+      "status": "Confirmed",
+      "pageCount": 2,
+      "fileSizeBytes": 27649,
+      "extractedTextSnippet": "This document is a laboratory report from Meridian Diagnostic Laboratories for patient Sarah Jenkins, dated 2026-09-15, detailing results for endocrinology, metabolic, lipid, renal function, and electrolyte panels.",
+      "createdAt": "2026-09-15T16:18:26.571Z",
+      "providerName": "Dr. Robert Vance, MD"
+    }
+  ],
+  "facilities": [],
+  "providers": [],
+  "events": [
+    {
+      "id": "evt-extract-1789490094992-s60cr",
+      "patientId": "pat-1789489062614",
+      "eventType": "Medication",
+      "eventDate": "2025-03-10",
+      "title": "Prescription Refill & Regimen Adjustment",
+      "description": "Prescription written for dual oral hypoglycemic therapy.",
+      "facilityName": "Meridian Medical Centre",
+      "providerName": "Dr. Sarah Jenkins, MD",
+      "documentId": "doc_1789489106381_7fa2u",
+      "documentFileName": "01_consultation_and_prescription.pdf",
+      "createdAt": "2026-09-15T16:34:54.992Z"
+    },
+    {
+      "id": "evt-extract-1789490094993-ov13z",
+      "patientId": "pat-1789489062614",
+      "eventType": "Medication",
+      "eventDate": "2025-03-10",
+      "title": "Prescription: 01 consultation and prescription",
+      "description": "Diagnoses: Type 2 Diabetes Mellitus · Medications: Empagliflozin (Jardiance) 10 mg, Metformin ER 500 mg · Dispense 90-day supply for chronic maintenance.",
+      "facilityName": "Meridian Medical Centre",
+      "providerName": "Dr. Sarah Jenkins, MD",
+      "documentId": "doc_1789489106381_7fa2u",
+      "documentFileName": "01_consultation_and_prescription.pdf",
+      "createdAt": "2026-09-15T16:34:54.993Z"
+    },
+    {
+      "id": "evt-extract-1789490095004-nhj21",
+      "patientId": "pat-1789489062614",
+      "eventType": "Laboratory",
+      "eventDate": "2026-09-15",
+      "title": "Laboratory Report",
+      "description": "Laboratory tests ordered by Dr. Robert Vance, MD, with results reported on 2026-09-15. Pathologist review by Dr. Melissa Hayes, MD.",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "providerName": "Dr. Robert Vance, MD",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "createdAt": "2026-09-15T16:34:55.004Z"
+    },
+    {
+      "id": "evt-extract-1789490095004-g9btv",
+      "patientId": "pat-1789489062614",
+      "eventType": "Laboratory",
+      "eventDate": "2026-09-15",
+      "title": "Lab Report: 02 laboratory report",
+      "description": "Labs: HbA1c (7.4 %), Fasting Blood Glucose (138 mg/dL), Total Cholesterol (210 mg/dL), LDL Cholesterol (Calculated) (128 mg/dL), HDL Cholesterol (52 mg/dL), Triglycerides (165 mg/dL), Serum Creatinine (0.92 mg/dL), BUN (16 mg/dL), eGFR (CKD-EPI) (92 mL/min/1.73m²), Serum Potassium (4.3 mmol/L), Serum Sodium (140 mmol/L) · Specimen Collection Date: 2026-09-15 08:30 AM Accession: #LAB-2026-88319",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "providerName": "Dr. Robert Vance, MD",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "createdAt": "2026-09-15T16:34:55.004Z"
+    }
+  ],
+  "diagnoses": [
+    {
+      "id": "diag-1789490094992-vq18u",
+      "patientId": "pat-1789489062614",
+      "name": "Type 2 Diabetes Mellitus",
+      "status": "Active",
+      "firstDocumentedDate": "2025-03-10",
+      "lastDocumentedDate": "2025-03-10",
+      "documentId": "doc_1789489106381_7fa2u",
+      "documentFileName": "01_consultation_and_prescription.pdf",
+      "clinicalNotes": "Verification: Indication specified on prescription order | Source: Page 1, Diagnostic Indication",
+      "category": "Clinical Diagnosis",
+      "sourceReferenceId": "src-1789490094992-ws40so"
+    }
+  ],
+  "medications": [
+    {
+      "id": "med-1789490094992-efc0h",
+      "patientId": "pat-1789489062614",
+      "name": "Empagliflozin (Jardiance)",
+      "genericName": "Empagliflozin",
+      "dosage": "10 mg",
+      "frequency": "Once daily in the morning",
+      "route": "Oral",
+      "startDate": "2025-03-10",
+      "status": "Active",
+      "documentId": "doc_1789489106381_7fa2u",
+      "documentFileName": "01_consultation_and_prescription.pdf",
+      "prescribedBy": "Dr. Sarah Jenkins, MD",
+      "indication": "Type 2 Diabetes Mellitus",
+      "refillNote": "Evidence: Explicit prescription script with refills · Location: Page 1, Script Line 1 · User confirmed from clinical extraction",
+      "sourceReferenceId": "src-1789490094992-7ypdx7"
+    },
+    {
+      "id": "med-1789490094992-2987f",
+      "patientId": "pat-1789489062614",
+      "name": "Metformin ER",
+      "genericName": "Metformin Hydrochloride",
+      "dosage": "500 mg",
+      "frequency": "Twice daily",
+      "route": "Oral",
+      "startDate": "2025-03-10",
+      "status": "Active",
+      "documentId": "doc_1789489106381_7fa2u",
+      "documentFileName": "01_consultation_and_prescription.pdf",
+      "prescribedBy": "Dr. Sarah Jenkins, MD",
+      "indication": "Type 2 Diabetes Mellitus",
+      "refillNote": "Evidence: Explicit prescription script with refills · Location: Page 1, Script Line 2 · User confirmed from clinical extraction",
+      "sourceReferenceId": "src-1789490094992-3ijgf8"
+    }
+  ],
+  "labs": [
+    {
+      "id": "lab-1789490095004-o3a37",
+      "patientId": "pat-1789489062614",
+      "testName": "Hemoglobin A1c",
+      "parameterName": "HbA1c",
+      "value": 7.4,
+      "unit": "%",
+      "referenceRange": "4.0 - 5.6 %",
+      "testDate": "2026-09-15",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "interpretation": "Elevated",
+      "sourceReferenceId": "src-1789490095004-9is1an"
+    },
+    {
+      "id": "lab-1789490095004-hpsvk",
+      "patientId": "pat-1789489062614",
+      "testName": "Fasting Blood Glucose",
+      "parameterName": "Fasting Blood Glucose",
+      "value": 138,
+      "unit": "mg/dL",
+      "referenceRange": "70 - 99 mg/dL",
+      "testDate": "2026-09-15",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "interpretation": "Elevated",
+      "sourceReferenceId": "src-1789490095004-qypk6k"
+    },
+    {
+      "id": "lab-1789490095004-ey2h0",
+      "patientId": "pat-1789489062614",
+      "testName": "Total Cholesterol",
+      "parameterName": "Total Cholesterol",
+      "value": 210,
+      "unit": "mg/dL",
+      "referenceRange": "< 200 mg/dL",
+      "testDate": "2026-09-15",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "interpretation": "Elevated",
+      "sourceReferenceId": "src-1789490095004-fjim73"
+    },
+    {
+      "id": "lab-1789490095004-xulwv",
+      "patientId": "pat-1789489062614",
+      "testName": "LDL Cholesterol",
+      "parameterName": "LDL Cholesterol (Calculated)",
+      "value": 128,
+      "unit": "mg/dL",
+      "referenceRange": "< 100 mg/dL",
+      "testDate": "2026-09-15",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "interpretation": "Elevated",
+      "sourceReferenceId": "src-1789490095004-e4w4qk"
+    },
+    {
+      "id": "lab-1789490095004-dtoyn",
+      "patientId": "pat-1789489062614",
+      "testName": "HDL Cholesterol",
+      "parameterName": "HDL Cholesterol",
+      "value": 52,
+      "unit": "mg/dL",
+      "referenceRange": "> 50 mg/dL",
+      "testDate": "2026-09-15",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "interpretation": "Normal",
+      "sourceReferenceId": "src-1789490095004-9kifcf"
+    },
+    {
+      "id": "lab-1789490095004-sozij",
+      "patientId": "pat-1789489062614",
+      "testName": "Triglycerides",
+      "parameterName": "Triglycerides",
+      "value": 165,
+      "unit": "mg/dL",
+      "referenceRange": "< 150 mg/dL",
+      "testDate": "2026-09-15",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "interpretation": "Elevated",
+      "sourceReferenceId": "src-1789490095004-9bvb88"
+    },
+    {
+      "id": "lab-1789490095004-0bv1i",
+      "patientId": "pat-1789489062614",
+      "testName": "Serum Creatinine",
+      "parameterName": "Serum Creatinine",
+      "value": 0.92,
+      "unit": "mg/dL",
+      "referenceRange": "0.50 - 1.10 mg/dL",
+      "testDate": "2026-09-15",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "interpretation": "Normal",
+      "sourceReferenceId": "src-1789490095004-4vsqi5"
+    },
+    {
+      "id": "lab-1789490095004-kln0a",
+      "patientId": "pat-1789489062614",
+      "testName": "Blood Urea Nitrogen",
+      "parameterName": "BUN",
+      "value": 16,
+      "unit": "mg/dL",
+      "referenceRange": "7 - 20 mg/dL",
+      "testDate": "2026-09-15",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "interpretation": "Normal",
+      "sourceReferenceId": "src-1789490095004-m6u818"
+    },
+    {
+      "id": "lab-1789490095004-jpmq3",
+      "patientId": "pat-1789489062614",
+      "testName": "eGFR",
+      "parameterName": "eGFR (CKD-EPI)",
+      "value": 92,
+      "unit": "mL/min/1.73m²",
+      "referenceRange": "> 60 mL/min",
+      "testDate": "2026-09-15",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "interpretation": "Normal",
+      "sourceReferenceId": "src-1789490095004-wby1cs"
+    },
+    {
+      "id": "lab-1789490095004-19fya",
+      "patientId": "pat-1789489062614",
+      "testName": "Serum Potassium",
+      "parameterName": "Serum Potassium",
+      "value": 4.3,
+      "unit": "mmol/L",
+      "referenceRange": "3.5 - 5.0 mmol/L",
+      "testDate": "2026-09-15",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "interpretation": "Normal",
+      "sourceReferenceId": "src-1789490095004-t9ivpm"
+    },
+    {
+      "id": "lab-1789490095004-oy0c2",
+      "patientId": "pat-1789489062614",
+      "testName": "Serum Sodium",
+      "parameterName": "Serum Sodium",
+      "value": 140,
+      "unit": "mmol/L",
+      "referenceRange": "135 - 145 mmol/L",
+      "testDate": "2026-09-15",
+      "facilityName": "MERIDIAN DIAGNOSTIC LABORATORIES",
+      "documentId": "doc_1789489106384_3k5le",
+      "documentFileName": "02_laboratory_report.pdf",
+      "interpretation": "Normal",
+      "sourceReferenceId": "src-1789490095004-m4dxr7"
+    }
+  ],
+  "sources": [],
+  "contradictions": [],
+  "extractions": [
+    {
+      "id": "ext-1789489743238-whstv",
+      "documentId": "doc_1789489106384_3k5le",
+      "model": "Google Gemini 3.8 Flash",
+      "status": "Confirmed",
+      "data": {
+        "documentDate": "2026-09-15",
+        "documentType": "Lab Report",
+        "facility": "MERIDIAN DIAGNOSTIC LABORATORIES",
+        "facilityType": "Diagnostic Laboratory",
+        "provider": "Dr. Robert Vance, MD",
+        "summarySnippet": "This document is a laboratory report from Meridian Diagnostic Laboratories for patient Sarah Jenkins, dated 2026-09-15, detailing results for endocrinology, metabolic, lipid, renal function, and electrolyte panels.",
+        "patientInfo": {
+          "id": "pat-info-1789489743238",
+          "name": "Sarah Jenkins",
+          "dateOfBirth": "1976-04-12",
+          "gender": "Female",
+          "mrn": "MRN-784910",
+          "confidence": "High",
+          "reviewState": "High Confidence",
+          "confidenceReason": "Explicitly printed in document header",
+          "sourceText": "Patient Name: Sarah Jenkins\nMRN: MRN-784910\nDOB: 1976-04-12 Gender: Female",
+          "sourceQuote": "Patient Name: Sarah Jenkins\nMRN: MRN-784910\nDOB: 1976-04-12 Gender: Female",
+          "sourceLocation": "Page 1, Header",
+          "pageNumber": 1,
+          "accepted": true
+        },
+        "medicalEvents": [
+          {
+            "id": "evt-ext-1789489743238-0",
+            "title": "Laboratory Report",
+            "eventType": "Laboratory",
+            "date": "2026-09-15",
+            "facility": "MERIDIAN DIAGNOSTIC LABORATORIES",
+            "provider": "Dr. Robert Vance, MD",
+            "summary": "Laboratory tests ordered by Dr. Robert Vance, MD, with results reported on 2026-09-15. Pathologist review by Dr. Melissa Hayes, MD.",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Explicitly stated report and ordering details",
+            "sourceText": "Ordering Provider: Dr. Robert Vance, MD Report Date: 2026-09-15 12:45 PM\nFacility: Meridian Medical Centre\nPathologist Review: Dr. Melissa Hayes, MD Clinical Pathology",
+            "sourceQuote": "Ordering Provider: Dr. Robert Vance, MD Report Date: 2026-09-15 12:45 PM\nFacility: Meridian Medical Centre\nPathologist Review: Dr. Melissa Hayes, MD Clinical Pathology",
+            "sourceLocation": "Page 1, Header and Footer",
+            "pageNumber": 1,
+            "accepted": true
+          }
+        ],
+        "diagnoses": [],
+        "medications": [],
+        "labResults": [
+          {
+            "id": "lab-1789489743238-0",
+            "testName": "Hemoglobin A1c",
+            "parameterName": "HbA1c",
+            "value": "7.4",
+            "unit": "%",
+            "referenceRange": "4.0 - 5.6 %",
+            "date": "2026-09-15",
+            "interpretation": "Elevated",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Hemoglobin A1c (HbA1c): 7.4% Ref: 4.0 - 5.6 % [HIGH]",
+            "sourceText": "Hemoglobin A1c (HbA1c): 7.4% Ref: 4.0 - 5.6 % [HIGH]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Endocrinology & Metabolic Panel",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-1",
+            "testName": "Fasting Blood Glucose",
+            "parameterName": "Fasting Blood Glucose",
+            "value": "138",
+            "unit": "mg/dL",
+            "referenceRange": "70 - 99 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Elevated",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Fasting Blood Glucose: 138 mg/dL Ref: 70 - 99 mg/dL [HIGH]",
+            "sourceText": "Fasting Blood Glucose: 138 mg/dL Ref: 70 - 99 mg/dL [HIGH]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Endocrinology & Metabolic Panel",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-2",
+            "testName": "Total Cholesterol",
+            "parameterName": "Total Cholesterol",
+            "value": "210",
+            "unit": "mg/dL",
+            "referenceRange": "< 200 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Elevated",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Total Cholesterol: 210 mg/dL Ref: < 200 mg/dL [HIGH]",
+            "sourceText": "Total Cholesterol: 210 mg/dL Ref: < 200 mg/dL [HIGH]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Lipid Profile",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-3",
+            "testName": "LDL Cholesterol",
+            "parameterName": "LDL Cholesterol (Calculated)",
+            "value": "128",
+            "unit": "mg/dL",
+            "referenceRange": "< 100 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Elevated",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "LDL Cholesterol (Calculated): 128 mg/dL Ref: < 100 mg/dL [HIGH]",
+            "sourceText": "LDL Cholesterol (Calculated): 128 mg/dL Ref: < 100 mg/dL [HIGH]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Lipid Profile",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-4",
+            "testName": "HDL Cholesterol",
+            "parameterName": "HDL Cholesterol",
+            "value": "52",
+            "unit": "mg/dL",
+            "referenceRange": "> 50 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Normal",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "HDL Cholesterol: 52 mg/dL Ref: > 50 mg/dL [NORMAL]",
+            "sourceText": "HDL Cholesterol: 52 mg/dL Ref: > 50 mg/dL [NORMAL]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Lipid Profile",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-5",
+            "testName": "Triglycerides",
+            "parameterName": "Triglycerides",
+            "value": "165",
+            "unit": "mg/dL",
+            "referenceRange": "< 150 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Elevated",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Triglycerides: 165 mg/dL Ref: < 150 mg/dL [HIGH]",
+            "sourceText": "Triglycerides: 165 mg/dL Ref: < 150 mg/dL [HIGH]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Lipid Profile",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-6",
+            "testName": "Serum Creatinine",
+            "parameterName": "Serum Creatinine",
+            "value": "0.92",
+            "unit": "mg/dL",
+            "referenceRange": "0.50 - 1.10 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Normal",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Serum Creatinine: 0.92 mg/dL Ref: 0.50 - 1.10 mg/dL [NORMAL]",
+            "sourceText": "Serum Creatinine: 0.92 mg/dL Ref: 0.50 - 1.10 mg/dL [NORMAL]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Renal Function & Electrolytes",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-7",
+            "testName": "Blood Urea Nitrogen",
+            "parameterName": "BUN",
+            "value": "16",
+            "unit": "mg/dL",
+            "referenceRange": "7 - 20 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Normal",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Blood Urea Nitrogen (BUN): 16 mg/dL Ref: 7 - 20 mg/dL [NORMAL]",
+            "sourceText": "Blood Urea Nitrogen (BUN): 16 mg/dL Ref: 7 - 20 mg/dL [NORMAL]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Renal Function & Electrolytes",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-8",
+            "testName": "eGFR",
+            "parameterName": "eGFR (CKD-EPI)",
+            "value": "92",
+            "unit": "mL/min/1.73m²",
+            "referenceRange": "> 60 mL/min",
+            "date": "2026-09-15",
+            "interpretation": "Normal",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "eGFR (CKD-EPI): 92 mL/min/1.73m² Ref: > 60 mL/min [NORMAL]",
+            "sourceText": "eGFR (CKD-EPI): 92 mL/min/1.73m² Ref: > 60 mL/min [NORMAL]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Renal Function & Electrolytes",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-9",
+            "testName": "Serum Potassium",
+            "parameterName": "Serum Potassium",
+            "value": "4.3",
+            "unit": "mmol/L",
+            "referenceRange": "3.5 - 5.0 mmol/L",
+            "date": "2026-09-15",
+            "interpretation": "Normal",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Serum Potassium: 4.3 mmol/L Ref: 3.5 - 5.0 mmol/L [NORMAL]",
+            "sourceText": "Serum Potassium: 4.3 mmol/L Ref: 3.5 - 5.0 mmol/L [NORMAL]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Renal Function & Electrolytes",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-10",
+            "testName": "Serum Sodium",
+            "parameterName": "Serum Sodium",
+            "value": "140",
+            "unit": "mmol/L",
+            "referenceRange": "135 - 145 mmol/L",
+            "date": "2026-09-15",
+            "interpretation": "Normal",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Serum Sodium: 140 mmol/L Ref: 135 - 145 mmol/L [NORMAL]",
+            "sourceText": "Serum Sodium: 140 mmol/L Ref: 135 - 145 mmol/L [NORMAL]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Renal Function & Electrolytes",
+            "accepted": true
+          }
+        ],
+        "procedures": [],
+        "allergies": [],
+        "needsReviewItems": [],
+        "clinicalNotes": [
+          "Specimen Collection Date: 2026-09-15 08:30 AM",
+          "Accession: #LAB-2026-88319",
+          "Pathologist Review: Dr. Melissa Hayes, MD Clinical Pathology"
+        ]
+      },
+      "reviewedData": {
+        "documentDate": "2026-09-15",
+        "documentType": "Lab Report",
+        "facility": "MERIDIAN DIAGNOSTIC LABORATORIES",
+        "facilityType": "Diagnostic Laboratory",
+        "provider": "Dr. Robert Vance, MD",
+        "summarySnippet": "This document is a laboratory report from Meridian Diagnostic Laboratories for patient Sarah Jenkins, dated 2026-09-15, detailing results for endocrinology, metabolic, lipid, renal function, and electrolyte panels.",
+        "patientInfo": {
+          "id": "pat-info-1789489743238",
+          "name": "Sarah Jenkins",
+          "dateOfBirth": "1976-04-12",
+          "gender": "Female",
+          "mrn": "MRN-784910",
+          "confidence": "High",
+          "reviewState": "High Confidence",
+          "confidenceReason": "Explicitly printed in document header",
+          "sourceText": "Patient Name: Sarah Jenkins\nMRN: MRN-784910\nDOB: 1976-04-12 Gender: Female",
+          "sourceQuote": "Patient Name: Sarah Jenkins\nMRN: MRN-784910\nDOB: 1976-04-12 Gender: Female",
+          "sourceLocation": "Page 1, Header",
+          "pageNumber": 1,
+          "accepted": true
+        },
+        "medicalEvents": [
+          {
+            "id": "evt-ext-1789489743238-0",
+            "title": "Laboratory Report",
+            "eventType": "Laboratory",
+            "date": "2026-09-15",
+            "facility": "MERIDIAN DIAGNOSTIC LABORATORIES",
+            "provider": "Dr. Robert Vance, MD",
+            "summary": "Laboratory tests ordered by Dr. Robert Vance, MD, with results reported on 2026-09-15. Pathologist review by Dr. Melissa Hayes, MD.",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Explicitly stated report and ordering details",
+            "sourceText": "Ordering Provider: Dr. Robert Vance, MD Report Date: 2026-09-15 12:45 PM\nFacility: Meridian Medical Centre\nPathologist Review: Dr. Melissa Hayes, MD Clinical Pathology",
+            "sourceQuote": "Ordering Provider: Dr. Robert Vance, MD Report Date: 2026-09-15 12:45 PM\nFacility: Meridian Medical Centre\nPathologist Review: Dr. Melissa Hayes, MD Clinical Pathology",
+            "sourceLocation": "Page 1, Header and Footer",
+            "pageNumber": 1,
+            "accepted": true
+          }
+        ],
+        "diagnoses": [],
+        "medications": [],
+        "labResults": [
+          {
+            "id": "lab-1789489743238-0",
+            "testName": "Hemoglobin A1c",
+            "parameterName": "HbA1c",
+            "value": "7.4",
+            "unit": "%",
+            "referenceRange": "4.0 - 5.6 %",
+            "date": "2026-09-15",
+            "interpretation": "Elevated",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Hemoglobin A1c (HbA1c): 7.4% Ref: 4.0 - 5.6 % [HIGH]",
+            "sourceText": "Hemoglobin A1c (HbA1c): 7.4% Ref: 4.0 - 5.6 % [HIGH]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Endocrinology & Metabolic Panel",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-1",
+            "testName": "Fasting Blood Glucose",
+            "parameterName": "Fasting Blood Glucose",
+            "value": "138",
+            "unit": "mg/dL",
+            "referenceRange": "70 - 99 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Elevated",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Fasting Blood Glucose: 138 mg/dL Ref: 70 - 99 mg/dL [HIGH]",
+            "sourceText": "Fasting Blood Glucose: 138 mg/dL Ref: 70 - 99 mg/dL [HIGH]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Endocrinology & Metabolic Panel",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-2",
+            "testName": "Total Cholesterol",
+            "parameterName": "Total Cholesterol",
+            "value": "210",
+            "unit": "mg/dL",
+            "referenceRange": "< 200 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Elevated",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Total Cholesterol: 210 mg/dL Ref: < 200 mg/dL [HIGH]",
+            "sourceText": "Total Cholesterol: 210 mg/dL Ref: < 200 mg/dL [HIGH]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Lipid Profile",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-3",
+            "testName": "LDL Cholesterol",
+            "parameterName": "LDL Cholesterol (Calculated)",
+            "value": "128",
+            "unit": "mg/dL",
+            "referenceRange": "< 100 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Elevated",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "LDL Cholesterol (Calculated): 128 mg/dL Ref: < 100 mg/dL [HIGH]",
+            "sourceText": "LDL Cholesterol (Calculated): 128 mg/dL Ref: < 100 mg/dL [HIGH]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Lipid Profile",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-4",
+            "testName": "HDL Cholesterol",
+            "parameterName": "HDL Cholesterol",
+            "value": "52",
+            "unit": "mg/dL",
+            "referenceRange": "> 50 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Normal",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "HDL Cholesterol: 52 mg/dL Ref: > 50 mg/dL [NORMAL]",
+            "sourceText": "HDL Cholesterol: 52 mg/dL Ref: > 50 mg/dL [NORMAL]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Lipid Profile",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-5",
+            "testName": "Triglycerides",
+            "parameterName": "Triglycerides",
+            "value": "165",
+            "unit": "mg/dL",
+            "referenceRange": "< 150 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Elevated",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Triglycerides: 165 mg/dL Ref: < 150 mg/dL [HIGH]",
+            "sourceText": "Triglycerides: 165 mg/dL Ref: < 150 mg/dL [HIGH]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Lipid Profile",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-6",
+            "testName": "Serum Creatinine",
+            "parameterName": "Serum Creatinine",
+            "value": "0.92",
+            "unit": "mg/dL",
+            "referenceRange": "0.50 - 1.10 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Normal",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Serum Creatinine: 0.92 mg/dL Ref: 0.50 - 1.10 mg/dL [NORMAL]",
+            "sourceText": "Serum Creatinine: 0.92 mg/dL Ref: 0.50 - 1.10 mg/dL [NORMAL]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Renal Function & Electrolytes",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-7",
+            "testName": "Blood Urea Nitrogen",
+            "parameterName": "BUN",
+            "value": "16",
+            "unit": "mg/dL",
+            "referenceRange": "7 - 20 mg/dL",
+            "date": "2026-09-15",
+            "interpretation": "Normal",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Blood Urea Nitrogen (BUN): 16 mg/dL Ref: 7 - 20 mg/dL [NORMAL]",
+            "sourceText": "Blood Urea Nitrogen (BUN): 16 mg/dL Ref: 7 - 20 mg/dL [NORMAL]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Renal Function & Electrolytes",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-8",
+            "testName": "eGFR",
+            "parameterName": "eGFR (CKD-EPI)",
+            "value": "92",
+            "unit": "mL/min/1.73m²",
+            "referenceRange": "> 60 mL/min",
+            "date": "2026-09-15",
+            "interpretation": "Normal",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "eGFR (CKD-EPI): 92 mL/min/1.73m² Ref: > 60 mL/min [NORMAL]",
+            "sourceText": "eGFR (CKD-EPI): 92 mL/min/1.73m² Ref: > 60 mL/min [NORMAL]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Renal Function & Electrolytes",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-9",
+            "testName": "Serum Potassium",
+            "parameterName": "Serum Potassium",
+            "value": "4.3",
+            "unit": "mmol/L",
+            "referenceRange": "3.5 - 5.0 mmol/L",
+            "date": "2026-09-15",
+            "interpretation": "Normal",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Serum Potassium: 4.3 mmol/L Ref: 3.5 - 5.0 mmol/L [NORMAL]",
+            "sourceText": "Serum Potassium: 4.3 mmol/L Ref: 3.5 - 5.0 mmol/L [NORMAL]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Renal Function & Electrolytes",
+            "accepted": true
+          },
+          {
+            "id": "lab-1789489743238-10",
+            "testName": "Serum Sodium",
+            "parameterName": "Serum Sodium",
+            "value": "140",
+            "unit": "mmol/L",
+            "referenceRange": "135 - 145 mmol/L",
+            "date": "2026-09-15",
+            "interpretation": "Normal",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Clear laboratory report table entry",
+            "sourceQuote": "Serum Sodium: 140 mmol/L Ref: 135 - 145 mmol/L [NORMAL]",
+            "sourceText": "Serum Sodium: 140 mmol/L Ref: 135 - 145 mmol/L [NORMAL]",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Renal Function & Electrolytes",
+            "accepted": true
+          }
+        ],
+        "procedures": [],
+        "allergies": [],
+        "needsReviewItems": [],
+        "clinicalNotes": [
+          "Specimen Collection Date: 2026-09-15 08:30 AM",
+          "Accession: #LAB-2026-88319",
+          "Pathologist Review: Dr. Melissa Hayes, MD Clinical Pathology"
+        ]
+      },
+      "extractedAt": "2026-09-15T16:29:03.238Z",
+      "createdAt": "2026-09-15T16:29:03.238Z",
+      "updatedAt": "2026-09-15T16:34:55.004Z",
+      "confirmedAt": "2026-09-15T16:34:55.004Z"
+    },
+    {
+      "id": "ext-1789489694977-t3cmc",
+      "documentId": "doc_1789489106381_7fa2u",
+      "model": "Google Gemini 3.8 Flash",
+      "status": "Confirmed",
+      "data": {
+        "documentDate": "2025-03-10",
+        "documentType": "Prescription",
+        "facility": "Meridian Medical Centre",
+        "facilityType": "Outpatient Clinic",
+        "provider": "Dr. Sarah Jenkins, MD",
+        "providerSpecialty": "Endocrinology",
+        "summarySnippet": "Prescription order for Empagliflozin 10mg daily and Metformin 500mg ER BID.",
+        "patientInfo": {
+          "id": "ext-pat-rx",
+          "name": "John Doe",
+          "dateOfBirth": "1976-04-12",
+          "gender": "Male",
+          "mrn": "MRN-784910",
+          "confidence": "High",
+          "reviewState": "High Confidence",
+          "confidenceReason": "Prescription pad patient information",
+          "sourceText": "Patient: John Doe (DOB: 12-Apr-1976)",
+          "sourceLocation": "Page 1, Rx Header",
+          "pageNumber": 1,
+          "accepted": true
+        },
+        "medicalEvents": [
+          {
+            "id": "ext-evt-rx-1",
+            "title": "Prescription Refill & Regimen Adjustment",
+            "eventType": "Medication",
+            "date": "2025-03-10",
+            "facility": "Meridian Medical Centre",
+            "provider": "Dr. Sarah Jenkins, MD",
+            "summary": "Prescription written for dual oral hypoglycemic therapy.",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Signed medical prescription",
+            "sourceText": "Meridian Medical Centre Rx Order #94821",
+            "sourceLocation": "Page 1, Top Header",
+            "pageNumber": 1,
+            "accepted": true
+          }
+        ],
+        "diagnoses": [
+          {
+            "id": "ext-diag-rx-1",
+            "name": "Type 2 Diabetes Mellitus",
+            "status": "Active",
+            "date": "2025-03-10",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Indication specified on prescription order",
+            "sourceQuote": "Dx: Type 2 Diabetes Mellitus (ICD-10 E11.9)",
+            "sourceText": "Dx: Type 2 Diabetes Mellitus (ICD-10 E11.9)",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Diagnostic Indication",
+            "accepted": true
+          }
+        ],
+        "medications": [
+          {
+            "id": "ext-med-rx-1",
+            "name": "Empagliflozin (Jardiance)",
+            "genericName": "Empagliflozin",
+            "dosage": "10 mg",
+            "frequency": "Once daily in the morning",
+            "route": "Oral",
+            "startDate": "2025-03-10",
+            "status": "Active",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Explicit prescription script with refills",
+            "sourceQuote": "Rx: Empagliflozin 10 mg PO QAM #90. Refills: 3.",
+            "sourceText": "Rx: Empagliflozin 10 mg PO QAM #90. Refills: 3.",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Script Line 1",
+            "accepted": true
+          },
+          {
+            "id": "ext-med-rx-2",
+            "name": "Metformin ER",
+            "genericName": "Metformin Hydrochloride",
+            "dosage": "500 mg",
+            "frequency": "Twice daily",
+            "route": "Oral",
+            "startDate": "2025-03-10",
+            "status": "Active",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Explicit prescription script with refills",
+            "sourceQuote": "Rx: Metformin HCl ER 500 mg PO BID with meals #180. Refills: 3.",
+            "sourceText": "Rx: Metformin HCl ER 500 mg PO BID with meals #180. Refills: 3.",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Script Line 2",
+            "accepted": true
+          }
+        ],
+        "labResults": [],
+        "procedures": [],
+        "allergies": [],
+        "needsReviewItems": [],
+        "clinicalNotes": [
+          "Dispense 90-day supply for chronic maintenance."
+        ]
+      },
+      "reviewedData": {
+        "documentDate": "2025-03-10",
+        "documentType": "Prescription",
+        "facility": "Meridian Medical Centre",
+        "facilityType": "Outpatient Clinic",
+        "provider": "Dr. Sarah Jenkins, MD",
+        "providerSpecialty": "Endocrinology",
+        "summarySnippet": "Prescription order for Empagliflozin 10mg daily and Metformin 500mg ER BID.",
+        "patientInfo": {
+          "id": "ext-pat-rx",
+          "name": "John Doe",
+          "dateOfBirth": "1976-04-12",
+          "gender": "Male",
+          "mrn": "MRN-784910",
+          "confidence": "High",
+          "reviewState": "High Confidence",
+          "confidenceReason": "Prescription pad patient information",
+          "sourceText": "Patient: John Doe (DOB: 12-Apr-1976)",
+          "sourceLocation": "Page 1, Rx Header",
+          "pageNumber": 1,
+          "accepted": true
+        },
+        "medicalEvents": [
+          {
+            "id": "ext-evt-rx-1",
+            "title": "Prescription Refill & Regimen Adjustment",
+            "eventType": "Medication",
+            "date": "2025-03-10",
+            "facility": "Meridian Medical Centre",
+            "provider": "Dr. Sarah Jenkins, MD",
+            "summary": "Prescription written for dual oral hypoglycemic therapy.",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Signed medical prescription",
+            "sourceText": "Meridian Medical Centre Rx Order #94821",
+            "sourceLocation": "Page 1, Top Header",
+            "pageNumber": 1,
+            "accepted": true
+          }
+        ],
+        "diagnoses": [
+          {
+            "id": "ext-diag-rx-1",
+            "name": "Type 2 Diabetes Mellitus",
+            "status": "Active",
+            "date": "2025-03-10",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Indication specified on prescription order",
+            "sourceQuote": "Dx: Type 2 Diabetes Mellitus (ICD-10 E11.9)",
+            "sourceText": "Dx: Type 2 Diabetes Mellitus (ICD-10 E11.9)",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Diagnostic Indication",
+            "accepted": true
+          }
+        ],
+        "medications": [
+          {
+            "id": "ext-med-rx-1",
+            "name": "Empagliflozin (Jardiance)",
+            "genericName": "Empagliflozin",
+            "dosage": "10 mg",
+            "frequency": "Once daily in the morning",
+            "route": "Oral",
+            "startDate": "2025-03-10",
+            "status": "Active",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Explicit prescription script with refills",
+            "sourceQuote": "Rx: Empagliflozin 10 mg PO QAM #90. Refills: 3.",
+            "sourceText": "Rx: Empagliflozin 10 mg PO QAM #90. Refills: 3.",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Script Line 1",
+            "accepted": true
+          },
+          {
+            "id": "ext-med-rx-2",
+            "name": "Metformin ER",
+            "genericName": "Metformin Hydrochloride",
+            "dosage": "500 mg",
+            "frequency": "Twice daily",
+            "route": "Oral",
+            "startDate": "2025-03-10",
+            "status": "Active",
+            "confidence": "High",
+            "reviewState": "High Confidence",
+            "confidenceReason": "Explicit prescription script with refills",
+            "sourceQuote": "Rx: Metformin HCl ER 500 mg PO BID with meals #180. Refills: 3.",
+            "sourceText": "Rx: Metformin HCl ER 500 mg PO BID with meals #180. Refills: 3.",
+            "pageNumber": 1,
+            "sourceLocation": "Page 1, Script Line 2",
+            "accepted": true
+          }
+        ],
+        "labResults": [],
+        "procedures": [],
+        "allergies": [],
+        "needsReviewItems": [],
+        "clinicalNotes": [
+          "Dispense 90-day supply for chronic maintenance."
+        ]
+      },
+      "extractedAt": "2026-09-15T16:28:14.977Z",
+      "createdAt": "2026-09-15T16:28:14.977Z",
+      "updatedAt": "2026-09-15T16:34:54.993Z",
+      "confirmedAt": "2026-09-15T16:34:54.992Z"
+    }
+  ],
+  "summaries": [
+    {
+      "id": "summary-pat-1789489062614-1789490226350",
+      "patientId": "pat-1789489062614",
+      "type": "Summary",
+      "title": "Longitudinal Clinical Journey Summary",
+      "content": {
+        "overview": "The patient was diagnosed with Type 2 Diabetes Mellitus on March 10, 2025, and initiated on dual oral hypoglycemic therapy with Empagliflozin and Metformin ER. Subsequent laboratory results on September 15, 2026, indicated elevated HbA1c, Fasting Blood Glucose, Total Cholesterol, LDL Cholesterol, and Triglycerides, while renal function and electrolytes remained within normal limits.",
+        "conditions": [
+          {
+            "name": "Type 2 Diabetes Mellitus",
+            "firstDocumented": "Mar 10, 2025",
+            "lastDocumented": "Mar 10, 2025",
+            "status": "Active",
+            "sourceEventIds": [
+              "diag-1789490094992-vq18u",
+              "evt-extract-1789490094993-ov13z"
+            ]
+          }
+        ],
+        "medications": [
+          {
+            "name": "Empagliflozin (Jardiance)",
+            "summary": "Prescribed on March 10, 2025, at a dosage of 10 mg once daily for Type 2 Diabetes Mellitus.",
+            "sourceEventIds": [
+              "med-1789490094992-efc0h",
+              "evt-extract-1789490094993-ov13z"
+            ]
+          },
+          {
+            "name": "Metformin ER",
+            "summary": "Prescribed on March 10, 2025, at a dosage of 500 mg twice daily for Type 2 Diabetes Mellitus.",
+            "sourceEventIds": [
+              "med-1789490094992-2987f",
+              "evt-extract-1789490094993-ov13z"
+            ]
+          }
+        ],
+        "labTrends": [
+          {
+            "parameter": "HbA1c (Hemoglobin A1c)",
+            "summary": "Measured at 7.4 % on Sep 15, 2026 (Elevated).",
+            "sourceEventIds": [
+              "lab-1789490095004-o3a37",
+              "evt-extract-1789490095004-g9btv"
+            ]
+          },
+          {
+            "parameter": "Fasting Blood Glucose",
+            "summary": "Measured at 138 mg/dL on Sep 15, 2026 (Elevated).",
+            "sourceEventIds": [
+              "lab-1789490095004-hpsvk",
+              "evt-extract-1789490095004-g9btv"
+            ]
+          },
+          {
+            "parameter": "Total Cholesterol",
+            "summary": "Measured at 210 mg/dL on Sep 15, 2026 (Elevated).",
+            "sourceEventIds": [
+              "lab-1789490095004-ey2h0",
+              "evt-extract-1789490095004-g9btv"
+            ]
+          },
+          {
+            "parameter": "LDL Cholesterol (Calculated)",
+            "summary": "Measured at 128 mg/dL on Sep 15, 2026 (Elevated).",
+            "sourceEventIds": [
+              "lab-1789490095004-xulwv",
+              "evt-extract-1789490095004-g9btv"
+            ]
+          },
+          {
+            "parameter": "HDL Cholesterol",
+            "summary": "Measured at 52 mg/dL on Sep 15, 2026 (Normal).",
+            "sourceEventIds": [
+              "lab-1789490095004-dtoyn",
+              "evt-extract-1789490095004-g9btv"
+            ]
+          },
+          {
+            "parameter": "Triglycerides",
+            "summary": "Measured at 165 mg/dL on Sep 15, 2026 (Elevated).",
+            "sourceEventIds": [
+              "lab-1789490095004-sozij",
+              "evt-extract-1789490095004-g9btv"
+            ]
+          },
+          {
+            "parameter": "Serum Creatinine",
+            "summary": "Measured at 0.92 mg/dL on Sep 15, 2026 (Normal).",
+            "sourceEventIds": [
+              "lab-1789490095004-0bv1i",
+              "evt-extract-1789490095004-g9btv"
+            ]
+          },
+          {
+            "parameter": "BUN",
+            "summary": "Measured at 16 mg/dL on Sep 15, 2026 (Normal).",
+            "sourceEventIds": [
+              "lab-1789490095004-kln0a",
+              "evt-extract-1789490095004-g9btv"
+            ]
+          },
+          {
+            "parameter": "eGFR (CKD-EPI)",
+            "summary": "Measured at 92 mL/min/1.73m² on Sep 15, 2026 (Normal).",
+            "sourceEventIds": [
+              "lab-1789490095004-jpmq3",
+              "evt-extract-1789490095004-g9btv"
+            ]
+          },
+          {
+            "parameter": "Serum Potassium",
+            "summary": "Measured at 4.3 mmol/L on Sep 15, 2026 (Normal).",
+            "sourceEventIds": [
+              "lab-1789490095004-19fya",
+              "evt-extract-1789490095004-g9btv"
+            ]
+          },
+          {
+            "parameter": "Serum Sodium",
+            "summary": "Measured at 140 mmol/L on Sep 15, 2026 (Normal).",
+            "sourceEventIds": [
+              "lab-1789490095004-oy0c2",
+              "evt-extract-1789490095004-g9btv"
+            ]
+          }
+        ],
+        "healthcareJourney": [
+          {
+            "category": "Consultation",
+            "date": "Mar 10, 2025",
+            "summary": "A prescription refill and regimen adjustment for dual oral hypoglycemic therapy was provided by Dr. Sarah Jenkins, MD, at Meridian Medical Centre, for Type 2 Diabetes Mellitus. Medications included Empagliflozin 10 mg and Metformin ER 500 mg.",
+            "sourceEventIds": [
+              "evt-extract-1789490094992-s60cr",
+              "evt-extract-1789490094993-ov13z",
+              "diag-1789490094992-vq18u",
+              "med-1789490094992-efc0h",
+              "med-1789490094992-2987f"
+            ]
+          },
+          {
+            "category": "Investigation",
+            "date": "Sep 15, 2026",
+            "summary": "Laboratory tests were ordered by Dr. Robert Vance, MD, and processed at MERIDIAN DIAGNOSTIC LABORATORIES. Results included elevated HbA1c (7.4%), Fasting Blood Glucose (138 mg/dL), Total Cholesterol (210 mg/dL), LDL Cholesterol (128 mg/dL), and Triglycerides (165 mg/dL).",
+            "sourceEventIds": [
+              "evt-extract-1789490095004-nhj21",
+              "evt-extract-1789490095004-g9btv",
+              "lab-1789490095004-o3a37",
+              "lab-1789490095004-hpsvk",
+              "lab-1789490095004-ey2h0",
+              "lab-1789490095004-xulwv",
+              "lab-1789490095004-sozij"
+            ]
+          }
+        ],
+        "recordObservations": []
+      },
+      "sourceEventIds": [
+        "diag-1789490094992-vq18u",
+        "evt-extract-1789490094993-ov13z",
+        "med-1789490094992-efc0h",
+        "med-1789490094992-2987f",
+        "lab-1789490095004-o3a37",
+        "evt-extract-1789490095004-g9btv",
+        "lab-1789490095004-hpsvk",
+        "lab-1789490095004-ey2h0",
+        "lab-1789490095004-xulwv",
+        "lab-1789490095004-dtoyn",
+        "lab-1789490095004-sozij",
+        "lab-1789490095004-0bv1i",
+        "lab-1789490095004-kln0a",
+        "lab-1789490095004-jpmq3",
+        "lab-1789490095004-19fya",
+        "lab-1789490095004-oy0c2",
+        "evt-extract-1789490094992-s60cr",
+        "evt-extract-1789490095004-nhj21"
+      ],
+      "model": "Google Gemini 3.8 Flash",
+      "createdAt": "2026-09-15T16:37:06.350Z",
+      "confirmedRecordCount": 4,
+      "lastRecordDate": "2026-09-15",
+      "isOutdated": false
+    }
+  ]
+}

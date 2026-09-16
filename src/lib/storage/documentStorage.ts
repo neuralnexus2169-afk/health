@@ -159,6 +159,20 @@ class LocalDocumentStorage implements IDocumentStorage {
     };
 
     this.filesMap.set(key, storedFile);
+
+    // If running in browser and dataUrl is present, sync to backend storage
+    if (typeof window !== 'undefined' && dataUrl) {
+      try {
+        await fetch('/api/storage/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(storedFile),
+        });
+      } catch (syncErr) {
+        console.warn('Could not sync uploaded file to server storage:', syncErr);
+      }
+    }
+
     return storedFile;
   }
 

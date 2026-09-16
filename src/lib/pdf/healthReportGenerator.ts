@@ -303,6 +303,19 @@ function renderReportDocument(doc: PDFKit.PDFDocument, config: HealthReportConfi
       doc.text('Allergy list verified consistent across available clinical encounters.', 58, doc.y + 20);
       doc.y += 42;
     }
+
+    // Explicitly render documented allergies from patient profile and manual records
+    if (data.patient.allergies && data.patient.allergies.length > 0) {
+      doc.fontSize(8.5).font('Helvetica-Bold').fillColor('#1e293b');
+      doc.text('Documented Patient Allergies:', 45, doc.y);
+      doc.y += 4;
+      data.patient.allergies.forEach((allergy: string) => {
+        doc.fontSize(8).font('Helvetica').fillColor('#475569');
+        doc.text(`• ${allergy}`, 55, doc.y);
+        doc.y += 2;
+      });
+      doc.y += 6;
+    }
   }
 
   // ==========================================
@@ -348,12 +361,13 @@ function renderReportDocument(doc: PDFKit.PDFDocument, config: HealthReportConfi
         month: 'short',
         year: 'numeric',
       });
+      const isManual = !diag.documentId || diag.clinicalNotes?.includes('Manual');
       return [
-        diag.name,
+        diag.name + (isManual ? ' [Manual]' : ''),
         diag.category || 'Chronic',
         diag.status,
         onsetFormatted,
-        diag.clinicalNotes || 'Chronic condition under regular outpatient monitoring',
+        diag.clinicalNotes || (isManual ? 'Source: Manual entry by user' : 'Chronic condition under regular outpatient monitoring'),
       ];
     });
 
@@ -396,13 +410,16 @@ function renderReportDocument(doc: PDFKit.PDFDocument, config: HealthReportConfi
     const headers = ['Medication', 'Dosage', 'Frequency & Route', 'Indication', 'Start Date'];
     const colWidths = [125, 70, 115, 125, 70];
 
-    const rows = activeMeds.map((med) => [
-      med.name,
-      med.dosage,
-      `${med.frequency}${med.route ? ` (${med.route})` : ''}`,
-      med.indication || 'Maintenance therapy',
-      new Date(med.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-    ]);
+    const rows = activeMeds.map((med) => {
+      const isManual = !med.documentId;
+      return [
+        med.name + (isManual ? ' [Manual]' : ''),
+        med.dosage,
+        `${med.frequency}${med.route ? ` (${med.route})` : ''}`,
+        med.indication || (isManual ? 'Source: Manual entry by user' : 'Maintenance therapy'),
+        new Date(med.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+      ];
+    });
 
     renderTable(doc, headers, rows, colWidths);
     doc.y += 14;
@@ -455,14 +472,17 @@ function renderReportDocument(doc: PDFKit.PDFDocument, config: HealthReportConfi
     const headers = ['Date', 'Biomarker / Test', 'Result', 'Reference Range', 'Interpretation', 'Facility'];
     const colWidths = [70, 135, 75, 85, 70, 70];
 
-    const rows = displayLabs.map((l) => [
-      new Date(l.testDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      l.parameterName,
-      `${l.value} ${l.unit}`,
-      l.referenceRange || '—',
-      l.interpretation || 'Normal',
-      l.facilityName ? l.facilityName.replace(' Centre', '').replace(' Hospital', '') : 'Meridian',
-    ]);
+    const rows = displayLabs.map((l) => {
+      const isManual = !l.documentId;
+      return [
+        new Date(l.testDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        l.parameterName + (isManual ? ' [Manual]' : ''),
+        `${l.value} ${l.unit}`,
+        l.referenceRange || '—',
+        l.interpretation || 'Normal',
+        l.facilityName ? l.facilityName.replace(' Centre', '').replace(' Hospital', '') : (isManual ? 'Manual Entry' : 'Meridian'),
+      ];
+    });
 
     renderTable(doc, headers, rows, colWidths);
     doc.y += 14;
@@ -532,13 +552,16 @@ function renderReportDocument(doc: PDFKit.PDFDocument, config: HealthReportConfi
     const headers = ['Date', 'Category', 'Event / Encounter Title', 'Facility & Attending Provider', 'Summary / Details'];
     const colWidths = [70, 75, 140, 110, 110];
 
-    const rows = filteredEvents.slice(0, 10).map((evt) => [
-      new Date(evt.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      evt.eventType,
-      evt.title,
-      `${evt.facilityName || 'Meridian'}\n${evt.providerName || ''}`,
-      (evt.description || '').slice(0, 95) + '...',
-    ]);
+    const rows = filteredEvents.slice(0, 10).map((evt) => {
+      const isManual = !evt.documentId;
+      return [
+        new Date(evt.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        evt.eventType,
+        evt.title + (isManual ? ' [Manual Entry]' : ''),
+        isManual ? 'Manual Record Entry\nEntered by: User' : `${evt.facilityName || 'Meridian'}\n${evt.providerName || ''}`,
+        (evt.description || '').slice(0, 95) + '...',
+      ];
+    });
 
     renderTable(doc, headers, rows, colWidths);
     doc.y += 14;

@@ -722,7 +722,7 @@ export const SEED_MEDICATIONS: Medication[] = [
     route: 'Oral Tablet',
     startDate: '2025-03-10',
     status: 'Active',
-    eventId: 'evt-2025-03',
+    eventId: 'evt-2025-02',
     documentId: 'doc-2025-rx',
     documentFileName: 'prescription_2025.pdf',
     prescribedBy: 'Dr. Sarah Jenkins, MD',

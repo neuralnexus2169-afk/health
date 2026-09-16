@@ -295,6 +295,42 @@ export class ContradictionDetector {
       }
     }
 
+    // 3.6 Inspect patient profile allergies
+    if (input.patient && input.patient.allergies) {
+      for (const a of input.patient.allergies) {
+        const lower = a.toLowerCase();
+        if (lower.includes('no known') || lower.includes('nkda') || lower.includes('none')) {
+          if (!mentions.some((m) => m.type === 'NKDA')) {
+            mentions.push({
+              type: 'NKDA',
+              quote: 'Patient profile: ' + a,
+              documentId: 'profile-allergy',
+              documentFileName: 'Patient Profile',
+              date: new Date().toISOString().split('T')[0],
+              pageNumber: 1,
+              facilityName: 'Patient Record',
+              providerName: 'Self-reported',
+            });
+          }
+        } else if (lower.length > 0) {
+          if (!mentions.some((m) => m.type === 'SPECIFIC')) {
+            mentions.push({
+              type: 'SPECIFIC',
+              allergyName: a.split('(')[0].trim(),
+              reaction: a.includes('(') ? a.split('(')[1].replace(')', '').trim() : 'Documented allergy',
+              quote: 'Patient profile: ' + a,
+              documentId: 'profile-allergy',
+              documentFileName: 'Patient Profile',
+              date: new Date().toISOString().split('T')[0],
+              pageNumber: 1,
+              facilityName: 'Patient Record',
+              providerName: 'Self-reported',
+            });
+          }
+        }
+      }
+    }
+
     // 4. Match NKDA against Specific Allergies
     const nkdaMentions = mentions.filter((m) => m.type === 'NKDA');
     const specificMentions = mentions.filter((m) => m.type === 'SPECIFIC');

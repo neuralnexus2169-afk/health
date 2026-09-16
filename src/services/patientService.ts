@@ -675,6 +675,7 @@ export async function getPatientOverview(patientId: string = DEFAULT_PATIENT_ID)
 
 export async function addManualMedicalEvent(data: Omit<MedicalEvent, 'id' | 'createdAt'>): Promise<MedicalEvent> {
   const event = await timelineRepository.create({
+    id: `evt-manual-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
     ...data,
     isManualEntry: true,
   });

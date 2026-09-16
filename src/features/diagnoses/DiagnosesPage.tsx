@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   User,
   AlertCircle,
+  Trash2,
 } from 'lucide-react';
 import { PageHeader } from '../../components/dashboard/PageHeader';
 import { Button } from '../../components/ui/Button';

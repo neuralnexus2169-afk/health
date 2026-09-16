@@ -46,18 +46,27 @@ export async function extractDocument(documentId: string): Promise<DocumentExtra
     let structuredData: StructuredExtractionData | null = null;
     let modelName = 'Clinical Safety Engine';
 
+    // Look up any stored file data URL
+    const storedFiles = await documentStorage.list();
+    const storedFile = storedFiles.find((f) => f.fileName === doc.fileName || f.originalName === doc.fileName);
+
     // Attempt backend API call first (server-side Gemini)
     if (typeof window !== 'undefined') {
       try {
         const res = await fetch(`/api/documents/${encodeURIComponent(documentId)}/extract`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            base64Data: storedFile?.dataUrl,
+            mimeType: storedFile?.contentType,
+            fileName: doc.fileName,
+            documentType: doc.documentType,
+          }),
         });
         if (res.ok) {
           const apiJson = await res.json();
           if (apiJson.data && apiJson.extraction) {
-            structuredData = apiJson.extraction.data;
-            modelName = apiJson.extraction.model;
+            return apiJson.extraction;
           }
         }
       } catch {
@@ -69,10 +78,6 @@ export async function extractDocument(documentId: string): Promise<DocumentExtra
       // Use swappable AI provider (Gemini or Mock fallback)
       const provider = getAIProvider();
       modelName = provider.name;
-
-      // Look up any stored file data URL
-      const storedFiles = await documentStorage.list();
-      const storedFile = storedFiles.find((f) => f.fileName === doc.fileName);
 
       structuredData = await provider.extractMedicalInformation({
         fileName: doc.fileName,
@@ -186,6 +191,7 @@ export async function confirmExtraction(
   const reviewed = extraction.reviewedData || extraction.data;
   const now = new Date().toISOString();
   const eventDate = reviewed.documentDate || doc.documentDate || now.split('T')[0];
+  const effectivePatientId = patientId || doc.patientId || DEFAULT_PATIENT_ID;
 
   const createdSourceReferences: SourceReference[] = [];
   const createdDiagnoses: Diagnosis[] = [];
@@ -217,7 +223,7 @@ export async function confirmExtraction(
 
     const createdDiag = await diagnosisRepository.create({
       id: `diag-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      patientId,
+      patientId: effectivePatientId,
       name: diag.name,
       status: diag.status || 'Active',
       firstDocumentedDate: diag.date || eventDate,
@@ -242,7 +248,7 @@ export async function confirmExtraction(
 
     const createdMed = await medicationRepository.create({
       id: `med-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      patientId,
+      patientId: effectivePatientId,
       name: med.name,
       genericName: med.genericName,
       dosage: med.dosage,
@@ -267,7 +273,7 @@ export async function confirmExtraction(
     const numVal = typeof lab.value === 'number' ? lab.value : parseFloat(String(lab.value)) || 0;
     const createdLab = await labResultRepository.create({
       id: `lab-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      patientId,
+      patientId: effectivePatientId,
       testName: lab.testName,
       parameterName: lab.parameterName || lab.testName,
       value: numVal,
@@ -287,7 +293,7 @@ export async function confirmExtraction(
   // 4. Update Patient Allergies if any new accepted allergies
   const acceptedAllergies = reviewed.allergies.filter((a) => a.accepted !== false);
   if (acceptedAllergies.length > 0) {
-    const patient = await patientRepository.findById(patientId);
+    const patient = await patientRepository.findById(effectivePatientId);
     if (patient) {
       const existingAllergies = patient.allergies || [];
       const newAllergies = acceptedAllergies
@@ -295,7 +301,7 @@ export async function confirmExtraction(
         .filter((str) => !existingAllergies.some((existing) => existing.toLowerCase().includes(str.split(' ')[0].toLowerCase())));
 
       if (newAllergies.length > 0) {
-        await patientRepository.update(patientId, {
+        await patientRepository.update(effectivePatientId, {
           allergies: [...existingAllergies, ...newAllergies],
         });
       }
@@ -307,7 +313,7 @@ export async function confirmExtraction(
     for (const evt of reviewed.medicalEvents.filter((e) => e.accepted !== false)) {
       const customEvent = await timelineRepository.create({
         id: `evt-extract-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        patientId,
+        patientId: effectivePatientId,
         eventType: (evt.eventType as any) || 'Consultation',
         eventDate: evt.date || eventDate,
         title: evt.title,
@@ -345,7 +351,7 @@ export async function confirmExtraction(
 
   const primaryEvent = await timelineRepository.create({
     id: `evt-extract-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    patientId,
+    patientId: effectivePatientId,
     eventType,
     eventDate,
     title: `${doc.documentType}: ${doc.fileName.replace(/\.[^/.]+$/, '').replace(/_/g, ' ')}`,

@@ -14,6 +14,7 @@ import {
   Sparkles,
   ArrowUpRight,
   ExternalLink,
+  Trash2,
 } from 'lucide-react';
 import { EnrichedMedicalEvent, formatDisplayDate } from '../../services/patientService';
 import { Badge } from '../ui/Badge';
@@ -262,7 +263,7 @@ export function TimelineEvent({ event, onSelect, onViewSource, onDeleteEvent }: 
                     let type: 'event' | 'diagnosis' | 'medication' | 'lab' = 'event';
                     if (event.eventType === 'Diagnosis') type = 'diagnosis';
                     else if (event.eventType === 'Medication') type = 'medication';
-                    else if (event.eventType === 'Lab Result') type = 'lab';
+                    else if (event.eventType === 'Laboratory') type = 'lab';
                     onDeleteEvent(event.id, type);
                   }}
                   className="text-red-500 hover:text-red-700 p-1"

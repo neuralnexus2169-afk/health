@@ -30,6 +30,7 @@ interface TimelinePageProps {
   patient?: PatientProfile;
   onNavigate: (route: NavigationRoute) => void;
   onOpenUpload: () => void;
+  onOpenAddRecord?: () => void;
   onOpenExportReport?: () => void;
 }
 
@@ -206,7 +207,7 @@ export function TimelinePage({
     if (!window.confirm("Delete this manually entered record?\nThis will remove the record from your health history. This action cannot be undone.")) return;
     try {
       const { deleteRecord } = await import('../../services/patientService');
-      let targetModel = 'MedicalEvent';
+      let targetModel: 'MedicalEvent' | 'Diagnosis' | 'Medication' | 'LabResult' = 'MedicalEvent';
       if (type === 'diagnosis') targetModel = 'Diagnosis';
       else if (type === 'medication') targetModel = 'Medication';
       else if (type === 'lab') targetModel = 'LabResult';

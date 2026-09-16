@@ -4,7 +4,7 @@
  * and future AI contradiction detection & clinical QA.
  */
 
-export type Gender = 'Male' | 'Female' | 'Other' | 'Allergy';
+export type Gender = 'Male' | 'Female' | 'Other';
 
 export type DocumentType =
   | 'Prescription'

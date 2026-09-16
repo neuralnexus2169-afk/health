@@ -134,7 +134,7 @@ export function AddRecordModal({ isOpen, onClose, patientId, onRecordCreated }: 
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={resetAndClose} title={step === 4 ? '' : 'Add Health Record'} size="lg">
+    <Modal isOpen={isOpen} onClose={resetAndClose} title={step === 4 ? '' : 'Add Health Record'} maxWidth="lg">
       <div className="p-4 sm:p-6 space-y-4 text-[var(--color-text-primary)]">
         {step === 1 && (
           <div className="space-y-4">

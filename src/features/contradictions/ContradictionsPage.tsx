@@ -31,6 +31,7 @@ interface ContradictionsPageProps {
   patient?: PatientProfile;
   onNavigate: (route: NavigationRoute) => void;
   onOpenUpload?: () => void;
+  onOpenAddRecord?: () => void;
 }
 
 type FilterCategory = 'all' | 'Allergy' | 'Medication' | 'Diagnosis';

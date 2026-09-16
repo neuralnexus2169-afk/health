@@ -9,6 +9,7 @@ import {
   SEED_MEDICATIONS,
   SEED_LAB_RESULTS,
   SEED_SOURCE_REFERENCES,
+  SEED_CONTRADICTIONS,
 } from '../src/lib/db/seed-data';
 
 const prisma = new PrismaClient();
@@ -301,6 +302,58 @@ async function main() {
           facilityId: lab.facilityId,
           documentId: lab.documentId,
           eventId: lab.eventId,
+        },
+      });
+    }
+
+    // 10. Contradictions
+    console.log(`- Seeding ${SEED_CONTRADICTIONS.length} clinical contradictions...`);
+    for (const c of SEED_CONTRADICTIONS) {
+      await (prisma as any).medicalContradiction.upsert({
+        where: { id: c.id },
+        update: {
+          category: c.category,
+          title: c.title,
+          description: c.description,
+          clinicalExplanation: c.clinicalExplanation,
+          severity: c.severity,
+          status: c.status,
+          reviewStatus: c.reviewStatus,
+          firstFact: c.firstFact,
+          secondFact: c.secondFact,
+          firstDate: c.firstDate,
+          secondDate: c.secondDate,
+          firstProvider: c.firstProvider,
+          secondProvider: c.secondProvider,
+          firstFacility: c.firstFacility,
+          secondFacility: c.secondFacility,
+          firstSourceReference: c.firstSourceReference,
+          secondSourceReference: c.secondSourceReference,
+          sourceAJson: JSON.stringify(c.sourceA),
+          sourceBJson: JSON.stringify(c.sourceB),
+        },
+        create: {
+          id: c.id,
+          patientId: c.patientId,
+          category: c.category,
+          title: c.title,
+          description: c.description,
+          clinicalExplanation: c.clinicalExplanation,
+          severity: c.severity,
+          status: c.status,
+          reviewStatus: c.reviewStatus,
+          firstFact: c.firstFact,
+          secondFact: c.secondFact,
+          firstDate: c.firstDate,
+          secondDate: c.secondDate,
+          firstProvider: c.firstProvider,
+          secondProvider: c.secondProvider,
+          firstFacility: c.firstFacility,
+          secondFacility: c.secondFacility,
+          firstSourceReference: c.firstSourceReference,
+          secondSourceReference: c.secondSourceReference,
+          sourceAJson: JSON.stringify(c.sourceA),
+          sourceBJson: JSON.stringify(c.sourceB),
         },
       });
     }

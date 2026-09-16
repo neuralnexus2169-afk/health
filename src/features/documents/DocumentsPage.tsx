@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   CheckCircle2,
   Sparkles,
+  Plus,
 } from 'lucide-react';
 import { PageHeader } from '../../components/dashboard/PageHeader';
 import { Button } from '../../components/ui/Button';
@@ -33,6 +34,7 @@ interface DocumentsPageProps {
   patient?: PatientProfile;
   onNavigate: (route: NavigationRoute) => void;
   onOpenUpload?: () => void;
+  onOpenAddRecord?: () => void;
   initialSelectedDocId?: string;
 }
 
@@ -47,6 +49,7 @@ export function DocumentsPage({
   patient,
   onNavigate,
   onOpenUpload,
+  onOpenAddRecord,
   initialSelectedDocId,
 }: DocumentsPageProps) {
   const patientId = patient?.id || DEFAULT_PATIENT_ID;
@@ -260,6 +263,16 @@ export function DocumentsPage({
         }
         actions={
           <div className="flex items-center gap-2.5">
+            {onOpenAddRecord && (
+              <Button
+                variant="outline"
+                size="sm"
+                icon={<Plus className="w-3.5 h-3.5 text-teal-600" />}
+                onClick={onOpenAddRecord}
+              >
+                + Add record
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"

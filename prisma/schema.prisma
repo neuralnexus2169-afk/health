@@ -1,13 +1,13 @@
 // Prisma schema for HealthTimeline
-// Supports PostgreSQL in production / Cloud SQL, and clean repository abstraction
+// Configured with SQLite database provider
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 enum Gender {
@@ -76,15 +76,18 @@ model Patient {
   dateOfBirth DateTime
   gender      Gender
   bloodGroup  String?
+  allergies   String?  // Stored as JSON string or comma-separated list
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  documents     Document[]
-  medicalEvents MedicalEvent[]
-  diagnoses     Diagnosis[]
-  medications   Medication[]
-  labResults    LabResult[]
-  aiInsights    AIInsight[]
+  documents             Document[]
+  medicalEvents         MedicalEvent[]
+  diagnoses             Diagnosis[]
+  medications           Medication[]
+  labResults            LabResult[]
+  aiInsights            AIInsight[]
+  medicalContradictions MedicalContradiction[]
+  healthSummaries       HealthSummary[]
 
   @@map("patients")
 }
@@ -263,4 +266,48 @@ model DocumentExtraction {
   updatedAt     DateTime @updatedAt
 
   @@map("document_extractions")
+}
+
+model MedicalContradiction {
+  id                    String    @id @default(uuid())
+  patientId             String
+  patient               Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  category              String    // Allergy, Medication, Diagnosis, Timeline
+  title                 String
+  description           String
+  clinicalExplanation   String?
+  severity              String    // High, Moderate, Advisory
+  status                String    @default("Unresolved") // Unresolved, Acknowledged, Dismissed, Unreviewed, Reviewed
+  reviewStatus          String?   // Unreviewed, Reviewed
+  reviewNotes           String?
+  reviewedAt            DateTime?
+  reviewedBy            String?
+  firstFact             String?
+  secondFact            String?
+  firstDate             String?
+  secondDate            String?
+  firstProvider         String?
+  secondProvider        String?
+  firstFacility         String?
+  secondFacility        String?
+  firstSourceReference  String?
+  secondSourceReference String?
+  sourceAJson           String?   // Serialized JSON of sourceA
+  sourceBJson           String?   // Serialized JSON of sourceB
+  createdAt             DateTime  @default(now())
+
+  @@map("medical_contradictions")
+}
+
+model HealthSummary {
+  id          String   @id @default(uuid())
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  title       String
+  contentJson String   // Serialized JSON of StructuredHealthSummaryContent
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("health_summaries")
 }
